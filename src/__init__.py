@@ -1,0 +1,1 @@
+TUULET = ("ITÄ", "ETELÄ", "LÄNSI", "POHJOINEN")
