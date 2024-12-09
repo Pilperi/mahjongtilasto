@@ -4,7 +4,6 @@ import time
 import logging
 from . import TUULET
 
-LOGGER = logging.getLogger(__name__)
 
 def parse_id(rivi: str):
     '''ID-rivin parseri.
@@ -156,6 +155,9 @@ def lisaa_tulos_txt(pelitulos: list, tiedostopolku: str, aikaleima=None):
             if isinstance(pisteet, float):
                 LOGGER.debug("%s %s %.1f", tuuli, pelaaja, pisteet)
                 fopen.write(f"{pelaaja:s} {pisteet:.1f}\n")
+            else:
+                LOGGER.debug("%s %s %d", tuuli, pelaaja, pisteet)
+                fopen.write(f"{pelaaja:s} {pisteet:d}\n")
         fopen.write("\n")
     LOGGER.debug("Kirjoitettu")
 
