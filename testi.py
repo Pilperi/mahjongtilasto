@@ -1,8 +1,11 @@
 import random
+import time
 import json
-from src import parseri
+from mahjongtilasto import parseri
 
 def generoi_pelitulos(nimet):
+    '''Generoi satunnainen pelitulos.
+    '''
     tulos = [None for i in range(4)]
     pisteita = 4*25_000
     for pind,pelaaja in enumerate(nimet):
@@ -16,10 +19,12 @@ def generoi_pelitulos(nimet):
     return tulos
 
 def main():
+    '''Luo muutama peli, kirjaa ne tiedostoon ja tarkista että saadaan luettua
+    '''
     nimet = [f"Pelaaja {ind+1:d}" for ind in range(10)]
     peleja = 37
     for i in range(peleja):
-        aikaleima = f"2024-12-10-00-42-{i:02d}"
+        aikaleima = f"{time.strftime('%Y-%m-%d-%H-%M')}-{i:02d}"
         pelaajat = random.sample(nimet, 4)
         testipeli = generoi_pelitulos(pelaajat)
         parseri.lisaa_tulos_txt(testipeli, "./testitulos.txt", aikaleima)
