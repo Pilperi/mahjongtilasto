@@ -2,8 +2,10 @@
 import os
 import time
 import logging
-from . import TUULET
+from mahjongtilasto import TUULET
 
+import logging
+LOGGER = logging.getLogger(__name__)
 
 def parse_id(rivi: str):
     '''ID-rivin parseri.
@@ -26,6 +28,7 @@ def parse_id(rivi: str):
     if not isinstance(rivi, str):
         LOGGER.debug("Ei validi ID %s", rivi)
         return None
+    rivi = rivi.rstrip()
     splitattu = rivi.split("-")
     # Ei oikeaa määrää elementtejä
     if len(splitattu) != 6:

@@ -1,8 +1,17 @@
 [build-system]
-requires = ["setuptools >= 61.0"]
-build-backend = "setuptools.buil_meta"
+requires = ["setuptools >= 61.0", "setuptools-scm", "wheel >= 0.38"]
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "tulosmanageri"
-version = "2024-12-09-1"
+name = "mahjongtilasto"
+version = "2024.12.14.0"
+description = "Yksinkertainen pistetilastojen hallinnointikirjasto"
+readme = "README.md"
+authors = [
+  {name = "Pilperi"},
+]
+maintainers = [
+  {name = "Pilperi"}
+]
 requires-python = ">=3.8"
+dependencies = []

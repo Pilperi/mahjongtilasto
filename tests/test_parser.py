@@ -1,5 +1,5 @@
 '''Parserifunktioiden yksikkötestit'''
-from tulosmanageri import parseri
+from mahjongtilasto import parseri
 
 
 def test_parse_id_pass():
@@ -11,6 +11,7 @@ def test_parse_id_pass():
     # Rivinvaihdolla
     testr = "2024-12-09-21-29-45\n"
     parsetulos = parseri.parse_id(testr)
+    assert testr == "2024-12-09-21-29-45\n"
     assert isinstance(parsetulos, str)
     assert len(parsetulos) == len(testr)-1
 
