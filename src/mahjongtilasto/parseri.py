@@ -31,7 +31,7 @@ def parse_id(rivi: str):
     rivi = rivi.rstrip()
     splitattu = rivi.split("-")
     # Ei oikeaa määrää elementtejä
-    if len(splitattu) != 6:
+    if len(splitattu) < 4:
         LOGGER.debug("Ei validi ID %s", rivi)
         return None
     # Ei-numeroita seassa
@@ -39,11 +39,11 @@ def parse_id(rivi: str):
         LOGGER.debug("Ei validi ID %s", rivi)
         return None
     # Joku osa väärän pituinen
-    if len(splitattu[0]) != 4 or any(len(osa) != 2 for osa in splitattu[1:]):
+    if len(splitattu[0]) != 4 or any(len(osa) != 2 for osa in splitattu[1:3]):
         LOGGER.debug("Ei validi ID %s", rivi)
         return None
     # Muutoin validi ID
-    return rivi.rstrip()
+    return rivi
 
 
 def parse_pelaajatulos(rivi: str):

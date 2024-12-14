@@ -14,16 +14,20 @@ def test_parse_id_pass():
     assert testr == "2024-12-09-21-29-45\n"
     assert isinstance(parsetulos, str)
     assert len(parsetulos) == len(testr)-1
+    # Lyhyt aikaleima
+    testr = "2024-12-09-21"
+    parsetulos = parseri.parse_id(testr)
+    assert isinstance(parsetulos, str)
+    # Pitkä aikaleima
+    testr = "2024-12-09-21-29-29-29-29"
+    parsetulos = parseri.parse_id(testr)
+    assert isinstance(parsetulos, str)
 
 
 def test_parse_id_fail():
     '''Testaa että huonot ID:t hylätään.'''
     # Lyhyt aikaleima
-    testr = "2024-12-09-21-29\n"
-    parsetulos = parseri.parse_id(testr)
-    assert parsetulos is None
-    # Pitkä aikaleima
-    testr = "2024-12-09-21-29-29-29-29"
+    testr = "2024-12-09"
     parsetulos = parseri.parse_id(testr)
     assert parsetulos is None
     # Ei-numeroita
