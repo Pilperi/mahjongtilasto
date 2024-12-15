@@ -72,7 +72,7 @@ def parse_pelaajatulos(rivi: str):
     try:
         pistetulos = float(splitattu[-1])
         # 23.4 tai pelkkä 23
-        if "." in splitattu[-1] or pistetulos%10 != 0:
+        if "." in splitattu[-1] or pistetulos%100 != 0:
             pistetulos *= 1000
     except ValueError as err:
         LOGGER.error("Ei validi tulosrivi '%s' (%s)", rivi, err)

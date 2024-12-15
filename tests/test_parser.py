@@ -90,3 +90,21 @@ def test_parse_pelaajatulos_pass():
     parsetulos = parseri.parse_pelaajatulos(testr)
     assert parsetulos[0] == "Pelaaja"
     assert parsetulos[1] == -21_000
+    # 20.0 tiivistetty muotoon 20
+    testr = "Pelaaja 20"
+    parsetulos = parseri.parse_pelaajatulos(testr)
+    assert parsetulos[0] == "Pelaaja"
+    assert parsetulos[1] == 20_000
+    testr = "Pelaaja -20"
+    parsetulos = parseri.parse_pelaajatulos(testr)
+    assert parsetulos[0] == "Pelaaja"
+    assert parsetulos[1] == -20_000
+    # 100.0 ei voi tiivistää muotoon 100
+    testr = "Pelaaja 100"
+    parsetulos = parseri.parse_pelaajatulos(testr)
+    assert parsetulos[0] == "Pelaaja"
+    assert parsetulos[1] == 100
+    testr = "Pelaaja -100"
+    parsetulos = parseri.parse_pelaajatulos(testr)
+    assert parsetulos[0] == "Pelaaja"
+    assert parsetulos[1] == -100
