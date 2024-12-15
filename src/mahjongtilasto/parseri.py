@@ -4,7 +4,6 @@ import time
 import logging
 from mahjongtilasto import TUULET
 
-import logging
 LOGGER = logging.getLogger(__name__)
 
 def parse_id(rivi: str):
@@ -72,7 +71,8 @@ def parse_pelaajatulos(rivi: str):
     pelaajanimi = " ".join(splitattu[:-1])
     try:
         pistetulos = float(splitattu[-1])
-        if "." in splitattu[-1]:
+        # 23.4 tai pelkkä 23
+        if "." in splitattu[-1] or pistetulos%10 != 0:
             pistetulos *= 1000
     except ValueError as err:
         LOGGER.error("Ei validi tulosrivi '%s' (%s)", rivi, err)
@@ -82,7 +82,7 @@ def parse_pelaajatulos(rivi: str):
 
 def parse_txt_dictiksi(tiedostopolku: str):
     '''Lue pelitulokset tekstitiedostosta.
-    
+
     Parametrit
     ----------
     tiedostopolku : str
@@ -108,7 +108,7 @@ def parse_txt_dictiksi(tiedostopolku: str):
             if aikaleima is not None:
                 LOGGER.debug("Lue tulos %s", aikaleima)
                 tulokset[aikaleima] = [None for i in TUULET]
-                for tuuli_index,tuuli in enumerate(TUULET):
+                for tuuli_index, tuuli in enumerate(TUULET):
                     rivi = fopen.readline().rstrip()
                     tulokset[aikaleima][tuuli_index] = parse_pelaajatulos(rivi)
                     LOGGER.debug("%s tulos %s", tuuli, tulokset[aikaleima][tuuli_index])
@@ -136,13 +136,13 @@ def lisaa_tulos_txt(pelitulos: list, tiedostopolku: str, aikaleima=None):
     def validoi_pelaajatulos(tulos):
         if not isinstance(tulos[0], str):
             return False
-        if not len(tulos[0]):
+        if len(tulos[0]) == 0:
             return False
         if not isinstance(tulos[1], (int, float)):
             return False
         return True
     # Validoidaan data ennen kuin lähdetään kirjoittelemaan mitään
-    for tuuli_index,tuuli in enumerate(TUULET):
+    for tuuli_index, tuuli in enumerate(TUULET):
         pelaajatulos = pelitulos[tuuli_index]
         if not validoi_pelaajatulos(pelaajatulos):
             LOGGER.error("Ei validi pelaajatulos %s", pelaajatulos)
@@ -152,7 +152,7 @@ def lisaa_tulos_txt(pelitulos: list, tiedostopolku: str, aikaleima=None):
     with open(tiedostopolku, "a+") as fopen:
         LOGGER.debug(aikaleima)
         fopen.write(aikaleima+"\n")
-        for tuuli_index,tuuli in enumerate(TUULET):
+        for tuuli_index, tuuli in enumerate(TUULET):
             pelaaja = pelitulos[tuuli_index][0]
             pisteet = pelitulos[tuuli_index][1]
             if isinstance(pisteet, float):
@@ -201,11 +201,11 @@ def pelaajadelta(tiedostopolku: str, pelaaja: str):
             if aikaleima is not None:
                 LOGGER.debug("Lue tulos %s", aikaleima)
                 tulos = [None for i in TUULET]
-                for tuuli_index,tuuli in enumerate(TUULET):
+                for tuuli_index, tuuli in enumerate(TUULET):
                     rivi = fopen.readline().rstrip()
                     tulos[tuuli_index] = parse_pelaajatulos(rivi)
                     LOGGER.debug("%s tulos %s", tuuli, tulokset[aikaleima][tuuli_index])
-                for nimi,piste in tulos:
+                for nimi, piste in tulos:
                     if nimi == pelaaja:
                         aloituspisteet = sum(tls[1] for tls in tulos)/4
                         delta = piste - aloituspisteet

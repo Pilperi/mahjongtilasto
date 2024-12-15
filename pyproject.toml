@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mahjongtilasto"
-version = "2024.12.14.1"
+version = "2024.12.15.1"
 description = "Yksinkertainen pistetilastojen hallinnointikirjasto"
 readme = "README.md"
 authors = [

@@ -81,3 +81,12 @@ def test_parse_pelaajatulos_pass():
     parsetulos = parseri.parse_pelaajatulos(testr)
     assert parsetulos[0] == "Pelaaja jolla pitkä nimi"
     assert parsetulos[1] == 21300
+    # 21.0 tiivistetty muotoon 21
+    testr = "Pelaaja 21"
+    parsetulos = parseri.parse_pelaajatulos(testr)
+    assert parsetulos[0] == "Pelaaja"
+    assert parsetulos[1] == 21_000
+    testr = "Pelaaja -21"
+    parsetulos = parseri.parse_pelaajatulos(testr)
+    assert parsetulos[0] == "Pelaaja"
+    assert parsetulos[1] == -21_000
