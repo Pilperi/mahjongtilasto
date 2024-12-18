@@ -3,7 +3,8 @@
 import sys
 import logging
 from PyQt5 import QtCore,QtWidgets
-from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_ERROR
+from mahjongtilasto import TUULET
+from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_ERROR, STYLESHEET_OK
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,21 +32,32 @@ class Paaikkuna(QtWidgets.QMainWindow):
             pelaajalista = []
         self.pelaajavaihtoehdot = sorted(pelaajalista, key=lambda t: t.lower()).copy()
         self.pelaajavaihtoehdot.extend("+")
-        self.pelaaja_ita = QtWidgets.QComboBox()
-        self.pelaaja_etela = QtWidgets.QComboBox()
-        self.pelaaja_lansi = QtWidgets.QComboBox()
-        self.pelaaja_pohjoinen = QtWidgets.QComboBox()
+        self.pelaajavalikot = (
+            QtWidgets.QComboBox(),
+            QtWidgets.QComboBox(),
+            QtWidgets.QComboBox(),
+            QtWidgets.QComboBox(),
+            )
+        self.pelaajat = [None for _ in TUULET] # Pelaajien nimet
+        self.pelaaja_ita = self.pelaajavalikot[0]
+        self.pelaaja_etela = self.pelaajavalikot[1]
+        self.pelaaja_lansi = self.pelaajavalikot[2]
+        self.pelaaja_pohjoinen = self.pelaajavalikot[3]
         # Signaalit pelaajanimiin
-        self.pelaaja_ita.currentIndexChanged.connect(self.vaihda_itaa)
+        self.pelaaja_ita.currentIndexChanged.connect(
+            lambda t: self.vaihda_pelaajaa(self.pelaaja_ita))
         self.pelaaja_ita.addItems(["Pelaaja itä"])
         self.pelaaja_ita.addItems([nimi for nimi in self.pelaajavaihtoehdot])
-        self.pelaaja_etela.currentIndexChanged.connect(self.vaihda_etelaa)
+        self.pelaaja_etela.currentIndexChanged.connect(
+            lambda t: self.vaihda_pelaajaa(self.pelaaja_etela))
         self.pelaaja_etela.addItems(["Pelaaja etelä"])
         self.pelaaja_etela.addItems([nimi for nimi in self.pelaajavaihtoehdot])
-        self.pelaaja_lansi.currentIndexChanged.connect(self.vaihda_lantta)
+        self.pelaaja_lansi.currentIndexChanged.connect(
+            lambda t: self.vaihda_pelaajaa(self.pelaaja_lansi))
         self.pelaaja_lansi.addItems(["Pelaaja länsi"])
         self.pelaaja_lansi.addItems([nimi for nimi in self.pelaajavaihtoehdot])
-        self.pelaaja_pohjoinen.currentIndexChanged.connect(self.vaihda_pohjoista)
+        self.pelaaja_pohjoinen.currentIndexChanged.connect(
+            lambda t: self.vaihda_pelaajaa(self.pelaaja_pohjoinen))
         self.pelaaja_pohjoinen.addItems(["Pelaaja pohjoinen"])
         self.pelaaja_pohjoinen.addItems([nimi for nimi in self.pelaajavaihtoehdot])
         # Asiat paikoilleen
@@ -59,81 +71,46 @@ class Paaikkuna(QtWidgets.QMainWindow):
         self.grid.addWidget(self.pelaaja_pohjoinen, 3,1,1,10)
         self.show()
 
-    # TODO: yksittäiseksi kutsuksi joka ottaa listan argumenttina
-    # TODO: STYLESHEET_NORMAL pitää palauttaa pareittain
-    def vaihda_itaa(self):
-        sel_index = self.pelaaja_ita.currentIndex()
-        if not sel_index:
-            self.pelaaja_ita.setStyleSheet(STYLESHEET_NORMAL)
-        elif sel_index == len(self.pelaajavaihtoehdot):
-            self.lisaa_pelaaja(self.pelaaja_ita)
-        else:
-            muut_kentat = (
-                self.pelaaja_etela,
-                self.pelaaja_lansi,
-                self.pelaaja_pohjoinen,
-            )
-            self.pelaaja_ita.setStyleSheet(STYLESHEET_NORMAL)
-            for kentta in muut_kentat:
-                if kentta.currentIndex() == sel_index:
-                    kentta.setStyleSheet(STYLESHEET_ERROR)
-                    self.pelaaja_ita.setStyleSheet(STYLESHEET_ERROR)
+    def vaihda_pelaajaa(self, tuuli):
+        '''Vaihda valitun tuulen pelaajaa.
 
-    def vaihda_etelaa(self):
-        sel_index = self.pelaaja_etela.currentIndex()
-        if not sel_index:
-            self.pelaaja_etela.setStyleSheet(STYLESHEET_NORMAL)
-        elif sel_index == len(self.pelaajavaihtoehdot):
-            self.lisaa_pelaaja(self.pelaaja_etela)
-        else:
-            muut_kentat = (
-                self.pelaaja_ita,
-                self.pelaaja_lansi,
-                self.pelaaja_pohjoinen,
-            )
-            self.pelaaja_etela.setStyleSheet(STYLESHEET_NORMAL)
-            for kentta in muut_kentat:
-                if kentta.currentIndex() == sel_index:
-                    kentta.setStyleSheet(STYLESHEET_ERROR)
-                    self.pelaaja_etela.setStyleSheet(STYLESHEET_ERROR)
+        Parametrit
+        ----------
+        tuuli : QtWidgets.QComboBox
+            Referenssi pudotusvalikkoon josta tähän tultiin.
+        '''
+        sel_index = tuuli.currentIndex()
+        # Tuulen nimi ekana
+        if sel_index == 0:
+            LOGGER.debug("Valittiin istuinpaikan nimi")
+        # Uuden pelaajan lisääminen listan pohjalla
+        elif sel_index == len(self.pelaajavalikot):
+            LOGGER.debug("Lisää uusi pelaaja")
+            self.lisaa_pelaaja(tuuli)
+        # Tarkista onko sama pelaaja valittu kahteen paikkaan
+        pelaajavalinnat = [
+            pelaaja.currentIndex()
+            for pelaaja in self.pelaajavalikot
+            ]
+        for pelaajaindex, pelaaja in enumerate(self.pelaajavalikot):
+            pelaaja_nimi = pelaaja.currentText()
+            # (init-rutiini)
+            if pelaaja_nimi == '':
+                continue
+            valinta = pelaajavalinnat[pelaajaindex]
+            n_eri_paikalla = pelaajavalinnat.count(valinta)
+            # Useammassa läsnä (eikä paikan nimi)
+            if valinta and n_eri_paikalla > 1:
+                LOGGER.warning("'%s' on %d eri paikalla", pelaaja_nimi, n_eri_paikalla)
+                pelaaja.setStyleSheet(STYLESHEET_ERROR)
+            # OK
+            elif valinta:
+                pelaaja.setStyleSheet(STYLESHEET_OK)
+            # Pelaajapaikka
+            else:
+                pelaaja.setStyleSheet(STYLESHEET_NORMAL)
 
-    def vaihda_lantta(self):
-        sel_index = self.pelaaja_lansi.currentIndex()
-        if not sel_index:
-            self.pelaaja_lansi.setStyleSheet(STYLESHEET_NORMAL)
-        elif sel_index == len(self.pelaajavaihtoehdot):
-            self.lisaa_pelaaja(self.pelaaja_lansi)
-        else:
-            muut_kentat = (
-                self.pelaaja_ita,
-                self.pelaaja_etela,
-                self.pelaaja_pohjoinen,
-            )
-            self.pelaaja_lansi.setStyleSheet(STYLESHEET_NORMAL)
-            for kentta in muut_kentat:
-                if kentta.currentIndex() == sel_index:
-                    kentta.setStyleSheet(STYLESHEET_ERROR)
-                    self.pelaaja_lansi.setStyleSheet(STYLESHEET_ERROR)
-
-    def vaihda_pohjoista(self):
-        sel_index = self.pelaaja_pohjoinen.currentIndex()
-        if not sel_index:
-            self.pelaaja_pohjoinen.setStyleSheet(STYLESHEET_NORMAL)
-        elif sel_index == len(self.pelaajavaihtoehdot):
-            self.lisaa_pelaaja(self.pelaaja_pohjoinen)
-        else:
-            muut_kentat = (
-                self.pelaaja_ita,
-                self.pelaaja_etela,
-                self.pelaaja_lansi,
-            )
-            self.pelaaja_pohjoinen.setStyleSheet(STYLESHEET_NORMAL)
-            for kentta in muut_kentat:
-                if kentta.currentIndex() == sel_index:
-                    kentta.setStyleSheet(STYLESHEET_ERROR)
-                    self.pelaaja_pohjoinen.setStyleSheet(STYLESHEET_ERROR)
-
-    def lisaa_pelaaja(self, listaan=None):
+    def lisaa_pelaaja(self, tuuli=None):
         '''Lisää uusi pelaaja pelaajalistaan.
         Jos tapahtui pelaajavalinnan kautta, aseta valituksi.
         '''
