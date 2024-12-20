@@ -11,10 +11,10 @@ LOGGER = logging.getLogger(__name__)
 class Paaikkuna(QtWidgets.QMainWindow):
     def __init__(self, pelaajalista=None):
         super().__init__()
-        wid = QtWidgets.QWidget(self)
-        self.setCentralWidget(wid)
+        self.centralwidget = QtWidgets.QWidget(self)
+        self.setCentralWidget(self.centralwidget)
         self.grid = QtWidgets.QGridLayout()
-        wid.setLayout(self.grid)
+        self.centralwidget.setLayout(self.grid)
         self.setLayout(self.grid)
         self.grid.setSpacing(5)
         self.setStyleSheet(STYLESHEET_NORMAL)
@@ -138,7 +138,7 @@ class Paaikkuna(QtWidgets.QMainWindow):
         if sel_index == 0:
             LOGGER.debug("Valittiin istuinpaikan nimi")
         # Uuden pelaajan lisääminen listan pohjalla
-        elif sel_index == len(self.pelaajavalikot):
+        elif sel_index == tuuli.count()-1:
             LOGGER.debug("Lisää uusi pelaaja")
             self.lisaa_pelaaja(tuuli)
         # Tarkista onko sama pelaaja valittu kahteen paikkaan
@@ -169,11 +169,36 @@ class Paaikkuna(QtWidgets.QMainWindow):
                 self.validit_pelaajat = False
         self.tarkista_validius()
 
-    def lisaa_pelaaja(self, tuuli=None):
+    def lisaa_pelaaja(self, tuuli):
         '''Lisää uusi pelaaja pelaajalistaan.
-        Jos tapahtui pelaajavalinnan kautta, aseta valituksi.
+        Aseta valituksi kenttään josta lisäys tapahtui, muissa tokavikaksi.
         '''
-        return # TODO
+        pelaajan_nimi, ok_cancel = QtWidgets.QInputDialog.getText(
+            self.centralwidget,
+            "Uuden pelaajan nick",
+            "Pelaaja"
+        )
+        if ok_cancel:
+            LOGGER.debug("Pelaajalisäys OK")
+            # Tarkistetaan onko pelaaja jo pelaajalistassa
+            if pelaajan_nimi not in self.pelaajavaihtoehdot:
+                LOGGER.debug("%s ei pelaajalistassa, valid", pelaajan_nimi)
+                paikka = len(self.pelaajavaihtoehdot)
+                self.pelaajavaihtoehdot.insert(paikka, pelaajan_nimi)
+                for pelaaja in self.pelaajavalikot:
+                    # Muutoin tunnistaa currentIndexChanged
+                    # ja jää looppaamaan
+                    pelaaja.blockSignals(True)
+                    pelaaja.insertItem(paikka, pelaajan_nimi)
+                    pelaaja.blockSignals(False)
+                tuuli.setCurrentIndex(paikka)
+            else:
+                # Voisi myös olla: valkkaa listasta jos se siellä jo on
+                LOGGER.error("'%s' on jo pelaajalistassa", pelaajan_nimi)
+                tuuli.setCurrentIndex(0)
+        else:
+            LOGGER.debug("Pelaajalisäys CANCEL")
+            tuuli.setCurrentIndex(0)
 
     def tarkista_pisteet(self):
         '''Tarkista täsmääkö syötetyt pisteet
