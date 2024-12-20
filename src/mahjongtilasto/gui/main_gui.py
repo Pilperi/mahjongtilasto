@@ -72,7 +72,7 @@ class Paaikkuna(QtWidgets.QMainWindow):
         self.pelaaja_pohjoinen.addItems([nimi for nimi in self.pelaajavaihtoehdot])
         # Pisteiden syöttökentät
         validaattori_piste = QtGui.QRegExpValidator(
-            QtCore.QRegExp("[-+]?[0-9]*\\.?,?[0-9]?"))
+            QtCore.QRegExp("[-+]?[0-9]*[\\.\\,]?[0-9]?"))
         self.pisteet_ita = QtWidgets.QLineEdit(alignment=QtCore.Qt.AlignRight)
         self.pisteet_ita.setValidator(validaattori_piste)
         self.pisteet_ita.setToolTip("12.3 / -12,3 / 12300")
@@ -179,11 +179,12 @@ class Paaikkuna(QtWidgets.QMainWindow):
         self.validit_pisteet = True
         for pelaaja, pistetulos in enumerate(self.pistelaatikot):
             pisteet = pistetulos.text().replace(',', '.')
-            # Ei vielä asetettu
-            if pisteet == '':
+            try:
+                pisteet = float(pisteet)
+            except ValueError:
+                # Ei validi: vielä asetettu tai ei-numeerinen
                 joku_laittamatta = True
                 continue
-            pisteet = float(pisteet)
             LOGGER.debug("%s pisteet %.1f", TUULET[pelaaja], pisteet)
             pistesumma += pisteet
             LOGGER.debug("Pistesumma %.1f", pisteet)
