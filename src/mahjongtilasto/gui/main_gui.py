@@ -4,7 +4,7 @@ import sys
 import logging
 from PyQt5 import QtCore,QtWidgets,QtGui
 from mahjongtilasto import TUULET, VALIDIT_PISTESUMMAT
-from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_ERROR, STYLESHEET_OK, STYLESHEET_NA
+from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_ERROR, STYLESHEET_OK, STYLESHEET_NA, STYLESHEET_TOOLTIP
 
 LOGGER = logging.getLogger(__name__)
 
@@ -77,21 +77,25 @@ class Paaikkuna(QtWidgets.QMainWindow):
         self.pisteet_ita.setValidator(validaattori_piste)
         self.pisteet_ita.setToolTip("12.3 / -12,3 / 12300")
         self.pisteet_ita.textChanged.connect(self.tarkista_pisteet)
+        self.pisteet_ita.setStyleSheet(STYLESHEET_TOOLTIP)
 
         self.pisteet_etela = QtWidgets.QLineEdit(alignment=QtCore.Qt.AlignRight)
         self.pisteet_etela.setValidator(validaattori_piste)
         self.pisteet_etela.setToolTip("12.3 / -12,3 / 12300")
         self.pisteet_etela.textChanged.connect(self.tarkista_pisteet)
+        self.pisteet_etela.setStyleSheet(STYLESHEET_TOOLTIP)
 
         self.pisteet_lansi = QtWidgets.QLineEdit(alignment=QtCore.Qt.AlignRight)
         self.pisteet_lansi.setValidator(validaattori_piste)
         self.pisteet_lansi.setToolTip("12.3 / -12,3 / 12300")
         self.pisteet_lansi.textChanged.connect(self.tarkista_pisteet)
+        self.pisteet_lansi.setStyleSheet(STYLESHEET_TOOLTIP)
 
         self.pisteet_pohjoinen = QtWidgets.QLineEdit(alignment=QtCore.Qt.AlignRight)
         self.pisteet_pohjoinen.setValidator(validaattori_piste)
         self.pisteet_pohjoinen.setToolTip("12.3 / -12,3 / 12300")
         self.pisteet_pohjoinen.textChanged.connect(self.tarkista_pisteet)
+        self.pisteet_pohjoinen.setStyleSheet(STYLESHEET_TOOLTIP)
         self.pistelaatikot = (
             self.pisteet_ita,
             self.pisteet_etela,
