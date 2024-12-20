@@ -3,3 +3,5 @@ __pycache__/
 *.bk
 build/
 testitulos.txt
+list/
+
