@@ -293,6 +293,14 @@ class Paaikkuna(QtWidgets.QMainWindow):
         infobox.setWindowTitle("Tallennettu")
         infobox.setText(f"{self.tulostiedosto}\n{aikaleima}")
         _ = infobox.exec()
+        self.reset()
+
+    def reset(self):
+        '''Aseta kentät takaisin alkuarvoihin
+        '''
+        for pelaaja_ind, pistetulos in enumerate(self.pistelaatikot):
+            self.pelaajavalikot[pelaaja_ind].setCurrentIndex(0)
+            pistetulos.clear()
 
 def main():
     '''Käynnistää Paaikkunan.
