@@ -126,6 +126,7 @@ def lisaa_tulos_txt(pelitulos: list, tiedostopolku: str, aikaleima=None):
     ----------
     pelitulos : list
         Pelaajatulokset tuulijärjestyksessä itä-etelä-länsi-pohjoinen
+        (pelaajan nimi, pelaajan pisteet) -arvopareja neljä kappaletta.
     tiedostopolku : str
         Tiedosto johon tulokset tarkoitus kirjata.
         Luodaan jos ei ollut olemassa.

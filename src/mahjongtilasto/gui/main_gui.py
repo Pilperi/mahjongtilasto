@@ -1,9 +1,12 @@
 '''Pääikkuna tulosten hallinnointiin.
 '''
 import sys
+import os
+import time
 import logging
 from PyQt5 import QtCore,QtWidgets,QtGui
 from mahjongtilasto import TUULET, VALIDIT_PISTESUMMAT
+from mahjongtilasto import parseri
 from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_ERROR, STYLESHEET_OK, STYLESHEET_NA, STYLESHEET_TOOLTIP
 
 LOGGER = logging.getLogger(__name__)
@@ -11,6 +14,7 @@ LOGGER = logging.getLogger(__name__)
 class Paaikkuna(QtWidgets.QMainWindow):
     def __init__(self, pelaajalista=None):
         super().__init__()
+        self.tulostiedosto = None
         self.centralwidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralwidget)
         self.grid = QtWidgets.QGridLayout()
@@ -254,7 +258,41 @@ class Paaikkuna(QtWidgets.QMainWindow):
     def tallenna_tulos(self):
         '''Tallenna tulos tiedostoon.
         '''
-        ...
+        if self.tulostiedosto is None:
+            LOGGER.debug("Valitse tiedosto johon tallennetaan")
+            kotikansio = os.path.expanduser("~")
+            oletuspolku = os.path.join(kotikansio, time.strftime("pelit_%Y.txt"))
+            tiedostopolku, ok_cancel = QtWidgets.QFileDialog.getSaveFileName(
+                self.centralwidget,
+                "Tallenna tulokset tiedostoon",
+                oletuspolku,
+                "Tekstitiedostot (*.txt)",
+                options=QtWidgets.QFileDialog.DontConfirmOverwrite,
+            )
+            if ok_cancel:
+                self.tulostiedosto = tiedostopolku
+            else:
+                return
+        LOGGER.debug("Tallenna tiedostoon '%s'", self.tulostiedosto)
+        aikaleima = time.strftime("%Y-%m-%d-%H-%M-%S")
+        LOGGER.debug("Tallennetaan tiedostoon '%s' aikaleimalla %s",
+            self.tulostiedosto, aikaleima)
+        pelitulos = []
+        for pelaaja_ind, pistetulos in enumerate(self.pistelaatikot):
+            pelaajan_nimi = self.pelaajavalikot[pelaaja_ind].currentText()
+            pelaajan_pisteet = float(pistetulos.text().replace(',', '.'))
+            LOGGER.debug("%s: %s pisteillä %.1f",
+                TUULET[pelaaja_ind], pelaajan_nimi, pelaajan_pisteet)
+            pelitulos.append((pelaajan_nimi, pelaajan_pisteet))
+        parseri.lisaa_tulos_txt(
+            pelitulos=pelitulos,
+            tiedostopolku=self.tulostiedosto,
+            aikaleima=aikaleima,
+            )
+        infobox = QtWidgets.QMessageBox(self.centralwidget)
+        infobox.setWindowTitle("Tallennettu")
+        infobox.setText(f"{self.tulostiedosto}\n{aikaleima}")
+        _ = infobox.exec()
 
 def main():
     '''Käynnistää Paaikkunan.
