@@ -5,8 +5,9 @@ import os
 import time
 import logging
 from PyQt5 import QtCore,QtWidgets,QtGui
-from mahjongtilasto import TUULET, VALIDIT_PISTESUMMAT
+from mahjongtilasto import KOTIKANSIO, TUULET, VALIDIT_PISTESUMMAT
 from mahjongtilasto import parseri
+from mahjongtilasto import PELAAJAT, PELAAJATIEDOSTO
 from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_ERROR, STYLESHEET_OK, STYLESHEET_NA, STYLESHEET_TOOLTIP
 
 LOGGER = logging.getLogger(__name__)
@@ -177,16 +178,26 @@ class Paaikkuna(QtWidgets.QMainWindow):
         '''Lisää uusi pelaaja pelaajalistaan.
         Aseta valituksi kenttään josta lisäys tapahtui, muissa tokavikaksi.
         '''
-        pelaajan_nimi, ok_cancel = QtWidgets.QInputDialog.getText(
-            self.centralwidget,
-            "Uuden pelaajan nick",
-            "Pelaaja"
-        )
-        if ok_cancel:
+        while True:
+            pelaajan_nimi, ok_cancel = QtWidgets.QInputDialog.getText(
+                self.centralwidget,
+                "Uuden pelaajan nick",
+                "Pelaaja (ei saa alkaa #)"
+            )
+            if ok_cancel and not pelaajan_nimi.startswith("#"):
+                break
+        if ok_cancel and len(pelaajan_nimi):
             LOGGER.debug("Pelaajalisäys OK")
             # Tarkistetaan onko pelaaja jo pelaajalistassa
-            if pelaajan_nimi not in self.pelaajavaihtoehdot:
+            on_jo_listassa = any(
+                vanha_pelaaja.casefold() == pelaajan_nimi.casefold()
+                for vanha_pelaaja in self.pelaajavaihtoehdot
+            )
+            if not on_jo_listassa:
                 LOGGER.debug("%s ei pelaajalistassa, valid", pelaajan_nimi)
+                with open(PELAAJATIEDOSTO, "a+", encoding="UTF-8") as fopen:
+                    LOGGER.debug("Tallenna '%s' pelaajatiedostoon", pelaajan_nimi)
+                    fopen.write(f"{pelaajan_nimi}\n")
                 paikka = len(self.pelaajavaihtoehdot)
                 self.pelaajavaihtoehdot.insert(paikka, pelaajan_nimi)
                 for pelaaja in self.pelaajavalikot:
@@ -260,8 +271,7 @@ class Paaikkuna(QtWidgets.QMainWindow):
         '''
         if self.tulostiedosto is None:
             LOGGER.debug("Valitse tiedosto johon tallennetaan")
-            kotikansio = os.path.expanduser("~")
-            oletuspolku = os.path.join(kotikansio, time.strftime("pelit_%Y.txt"))
+            oletuspolku = os.path.join(KOTIKANSIO, time.strftime("pelit_%Y.txt"))
             tiedostopolku, ok_cancel = QtWidgets.QFileDialog.getSaveFileName(
                 self.centralwidget,
                 "Tallenna tulokset tiedostoon",
@@ -306,5 +316,7 @@ def main():
     '''Käynnistää Paaikkunan.
     '''
     app = QtWidgets.QApplication([])
-    ikkuna = Paaikkuna(pelaajalista=["Kalle", "Mari", "Jouni", "Helmi", "jouko"])
+    ikkuna = Paaikkuna(
+        pelaajalista=sorted(list(PELAAJAT))
+        )
     sys.exit(app.exec_())
