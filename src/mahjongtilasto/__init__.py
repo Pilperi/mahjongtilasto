@@ -4,6 +4,8 @@ Yksinkertainen kirjasto mahjong-pelitulosten hallinnointiin.
 '''
 import os
 
+__version__ = "2024.12.27.0"
+
 KOTIKANSIO = os.path.expanduser("~")
 KANSIO_CFG = os.path.join(KOTIKANSIO, ".config", "mahjongtilasto")
 if not os.path.isdir(KANSIO_CFG):

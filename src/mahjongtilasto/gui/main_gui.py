@@ -12,6 +12,7 @@ from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_ERROR, STYLESHEET_O
 
 LOGGER = logging.getLogger(__name__)
 
+
 class Paaikkuna(QtWidgets.QMainWindow):
     def __init__(self, pelaajalista=None):
         super().__init__()
