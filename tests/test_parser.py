@@ -108,3 +108,36 @@ def test_parse_pelaajatulos_pass():
     parsetulos = parseri.parse_pelaajatulos(testr)
     assert parsetulos[0] == "Pelaaja"
     assert parsetulos[1] == -100
+
+def test_sijoitukset_helppo():
+    '''Testaa että sijoitusten lasku toimii helpossa tapauksessa.
+    '''
+    pisteet = [-1.3, 3.8, 15.3, 82.2]
+    assert sum(pisteet) == 100.0
+    sijoitukset = parseri.laske_sijoitukset(pisteet)
+    assert sijoitukset == [[4], [3], [2], [1]]
+    pisteet.reverse()
+    assert parseri.laske_sijoitukset(pisteet) == [[1], [2], [3], [4]]
+    pisteet = [3.8, -1.3, 82.2, 15.3]
+    assert parseri.laske_sijoitukset(pisteet) == [[3], [4], [1], [2]]
+
+
+def test_sijoitukset_jaetut_sijat():
+    '''Testaa että sijoitusten lasku toimii jaetuilla sijoituksilla.
+    '''
+    # Jaettu ykkönen
+    pisteet = [28.0, 21.0, 28.0, 23.0]
+    sijoitukset = parseri.laske_sijoitukset(pisteet)
+    assert sijoitukset == [[1, 2], [4], [1, 2], [3]]
+    # Jaettu nelonen
+    pisteet = [29.0, 21.5, 28.0, 21.5]
+    sijoitukset = parseri.laske_sijoitukset(pisteet)
+    assert sijoitukset == [[1], [3, 4], [2], [3, 4]]
+    # Kaikki tasoissa
+    pisteet = [25.0, 25.0, 25.0, 25.0]
+    sijoitukset = parseri.laske_sijoitukset(pisteet)
+    assert sijoitukset == [[1, 2, 3, 4] for _ in range(len(pisteet))]
+    # Kaks ja kaks
+    pisteet = [28.0, 22.0, 28.0, 22.0]
+    sijoitukset = parseri.laske_sijoitukset(pisteet)
+    assert sijoitukset == [[1, 2], [3, 4], [1, 2], [3, 4]]

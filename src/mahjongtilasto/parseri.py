@@ -165,6 +165,34 @@ def lisaa_tulos_txt(pelitulos: list, tiedostopolku: str, aikaleima=None):
         fopen.write("\n")
     LOGGER.debug("Kirjoitettu")
 
+def laske_sijoitukset(pisteet: list):
+    '''Laske pistesijoitusten sijoitukset.
+
+    Isoin pistenumero on 1. sija.
+    Jaetuilla sijoilla annetaan pelaajan kaikki sijoitukset, koska siitä helpompi
+    laskea uman arvo (keskiarvo sijoituksista).
+
+    Parametrit
+    ----------
+    pisteet : list
+        Pelaajien loppupisteet. Kullekin pelaajalle kaikki tämän sijoitukset,
+        ts. pelaajan uma on sijoitusumien keskiarvo.
+
+    Palauttaa
+    ---------
+    sijoitukset : list
+        Pelaajien sijoitukset, esim [[1] [2], [3], [4]]
+        tai [[1,2], [1,2], [3], [4]]
+    '''
+    sijoitukset = [[] for _ in pisteet]
+    sijoitus = 1
+    for piste_ind, piste in enumerate(sorted(pisteet, reverse=True)):
+        for pelaaja_ind, pelaaja_piste in enumerate(pisteet):
+            # Asetetaan sijoitus
+            if pelaaja_piste == piste:
+                sijoitukset[pelaaja_ind].append(sijoitus)
+        sijoitus += 1
+    return sijoitukset
 
 def pelaajadelta(tiedostopolku: str, pelaaja: str):
     '''Etsi tuloslistasta tietyn pelaajan pistedelta.
@@ -181,16 +209,16 @@ def pelaajadelta(tiedostopolku: str, pelaaja: str):
     dict
         Pelaajan pistetilastot:
             - Pistesumma
-            - Pistedeltan varianssi
-            - Kaikki delta-arvot listana
+            - Pelikohtaiset pistedeltat
+            - Pelikohtaiset sijoitukset
     '''
     if not os.path.isfile(tiedostopolku):
         LOGGER.error("Tiedostopolku '%s' ei ole validi!")
         raise ValueError(f"Tiedostopolku {tiedostopolku:s} ei ole validi!")
     tulokset = {
         "delta": 0.0,
-        "var": 0.0,
         "delta_vals": [],
+        "sijoitukset": [],
     }
     with open(tiedostopolku, "r", encoding="utf-8") as fopen:
         rivi = fopen.readline()
@@ -206,6 +234,7 @@ def pelaajadelta(tiedostopolku: str, pelaaja: str):
                     rivi = fopen.readline().rstrip()
                     tulos[tuuli_index] = parse_pelaajatulos(rivi)
                     LOGGER.debug("%s tulos %s", tuuli, tulokset[aikaleima][tuuli_index])
+                sijoitukset = laske_sijoitukset(tulos)
                 for nimi, piste in tulos:
                     if nimi == pelaaja:
                         aloituspisteet = sum(tls[1] for tls in tulos)/4
