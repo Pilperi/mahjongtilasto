@@ -1,10 +1,18 @@
-2024-12-14
+2025-01-01
 # Kirjasto mahjong-pelitulosten kirjaamiseen
 
 ## Yksinkertainen tulostallennuskirjasto
 
 Tarkoitettu korvaamaan aiempi SQL-tietokantaan perustuva, jonka tulokset katosivat ikävän vääräsuuntapipe-operaation myötä.
 Kielenä Python, designperiaatteena _"olla niin yksinkertainen että tulokset voi tarvittaessa kirjata vaikka tekstieditorilla."_
+
+## Asennus ja käyttö
+
+Asennuksen _pitäisi_ olla niinkin yksinkertaista kuin `pip install git+https://github.com/Pilperi/mahjongtilasto`
+Asennus luo pikakomennon `mahjongtilasto`, jota kun kutsuu niin ruutuun hypähtää GUI (Qt5). Ikkunassa valitaan pelaajat kullekin tuulelle, lopun `+` lisää uuden pelaajan.
+Pelaajien loppupisteet merkataan viereisiin laatikoihin ja kun pistesumma täsmää johonkin tunnettuun (4x0 / 4x25.0 / 4x25000 / 4x30.0 / 4x30000) ja kaikilla tuulilla on validi pelaaja, `Tallenna`-nappi aktivoituu ja kysyy mihin tulokset tallennetaan. Tallennus ei ylikirjoita tiedostoja vaan lisää tulokset tiedoston loppuun.
+
+Tulosten käpistelypuolta ei ole vielä tehty (pelaajan pelien nettosummat, uma-laskenta jne). Tulossa aikanaan.
 
 ## Motivaatio
 
