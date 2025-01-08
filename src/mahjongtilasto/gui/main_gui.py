@@ -233,7 +233,8 @@ class Paaikkuna(QtWidgets.QMainWindow):
             LOGGER.debug("%s pisteet %.1f", TUULET[pelaaja], pisteet)
             pistesumma += pisteet
             LOGGER.debug("Pistesumma %.1f", pisteet)
-        if pistesumma in VALIDIT_PISTESUMMAT:
+        pistesumma = round(pistesumma, 1) # fp-pyöristykset veks
+        if any(abs(pistesumma-ps) < 0.1 for ps in VALIDIT_PISTESUMMAT):
             self.pistesumma.setStyleSheet(STYLESHEET_OK)
             self.pistesumma.setText(f"{pistesumma:.1f}")
             LOGGER.debug("Pistesumma OK")
