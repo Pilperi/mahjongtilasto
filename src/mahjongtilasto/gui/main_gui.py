@@ -19,9 +19,9 @@ class Paaikkuna(QtWidgets.QMainWindow):
         self.tulostiedosto = None
         self.centralwidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralwidget)
+        self.setWindowTitle("Pisteidensyöttäjä")
         self.grid = QtWidgets.QGridLayout()
         self.centralwidget.setLayout(self.grid)
-        self.setLayout(self.grid)
         self.grid.setSpacing(5)
         self.setStyleSheet(STYLESHEET_NORMAL)
         # Tuloksen validius
