@@ -1,4 +1,4 @@
-2025-01-01
+2025-01-10
 # Kirjasto mahjong-pelitulosten kirjaamiseen
 
 ## Yksinkertainen tulostallennuskirjasto
@@ -9,8 +9,14 @@ Kielenä Python, designperiaatteena _"olla niin yksinkertainen että tulokset vo
 ## Asennus ja käyttö
 
 Asennuksen _pitäisi_ olla niinkin yksinkertaista kuin `pip install git+https://github.com/Pilperi/mahjongtilasto`
-Asennus luo pikakomennon `mahjongtilasto`, jota kun kutsuu niin ruutuun hypähtää GUI (Qt5). Ikkunassa valitaan pelaajat kullekin tuulelle, lopun `+` lisää uuden pelaajan.
-Pelaajien loppupisteet merkataan viereisiin laatikoihin ja kun pistesumma täsmää johonkin tunnettuun (4x0 / 4x25.0 / 4x25000 / 4x30.0 / 4x30000) ja kaikilla tuulilla on validi pelaaja, `Tallenna`-nappi aktivoituu ja kysyy mihin tulokset tallennetaan. Tallennus ei ylikirjoita tiedostoja vaan lisää tulokset tiedoston loppuun.
+Asennus luo pikakomennon `mahjongtilasto`, jota kun kutsuu niin ruutuun hypähtää GUI (Qt5).
+
+<img src="doc/img/kirjausikkuna.png" width="700"></img>
+
+Pisteet kirjoitetaan pistelaatikoihin (1). Formaatti on melko vapaa: 12.3 on validi, +12,3 on validi, -12300 on validi. Kenttään ei voi laittaa kiellettyjä merkkejä. Kirjaajan päätettävissä merkataanko delta aloituksesta vai paljonko on tikkuja.
+Pistelaatikoiden alla on pistesummatarkastin (2), joka näyttää mihin lukuun syötetyt pisteet summautuvat ja paljonko on eroa johonkin tunnettuun lukemaan (4x0 / 4x30k / 4x25k). Jos summa heittää, ruutu on punainen ja kun mätsää se muuttuu vihreäksi.
+Pelaajien nimet valitaan pudotusvalikosta (3). Jos sama pelaaja on merkattu useammalle paikalle, se korostetaan punaisena ja muutoin vihreänä. Listan lopussa olevasta `+` saa lisättyä uuden pelaajan.
+Kun sekä pelaajanimet että pisteet on kunnossa, Tallenna-nappi (4) muuttuu painettavaksi. Ekalla kerralla se kysyy tiedostoa johon tallennetaan. Jos valitsee olemassaolevan tiedoston, tulokset lisätään sen loppuun (ts. ei ylikirjoita vaan vanhat tulokset säilytetään).
 
 Tulosten käpistelypuolta ei ole vielä tehty (pelaajan pelien nettosummat, uma-laskenta jne). Tulossa aikanaan.
 
