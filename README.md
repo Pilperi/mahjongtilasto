@@ -9,13 +9,16 @@ Kielenä Python, designperiaatteena _"olla niin yksinkertainen että tulokset vo
 ## Asennus ja käyttö
 
 Asennuksen _pitäisi_ olla niinkin yksinkertaista kuin `pip install git+https://github.com/Pilperi/mahjongtilasto`
-Asennus luo pikakomennon `mahjongtilasto`, jota kun kutsuu niin ruutuun hypähtää GUI (Qt5).
+Asennus luo pikakomennon `mahjongtilasto`, jota kun kutsuu niin ruutuun hypähtää GUI (Qt5). Saatat joutua säätämään venvien kanssa, mutta siihen pläjähtää omat ohjeistukset ruutuun jos näin on.
 
 <img src="doc/img/kirjausikkuna.png" width="700"></img>
 
 Pisteet kirjoitetaan pistelaatikoihin (1). Formaatti on melko vapaa: 12.3 on validi, +12,3 on validi, -12300 on validi. Kenttään ei voi laittaa kiellettyjä merkkejä. Kirjaajan päätettävissä merkataanko delta aloituksesta vai paljonko on tikkuja.
+
 Pistelaatikoiden alla on pistesummatarkastin (2), joka näyttää mihin lukuun syötetyt pisteet summautuvat ja paljonko on eroa johonkin tunnettuun lukemaan (4x0 / 4x30k / 4x25k). Jos summa heittää, ruutu on punainen ja kun mätsää se muuttuu vihreäksi.
+
 Pelaajien nimet valitaan pudotusvalikosta (3). Jos sama pelaaja on merkattu useammalle paikalle, se korostetaan punaisena ja muutoin vihreänä. Listan lopussa olevasta `+` saa lisättyä uuden pelaajan.
+
 Kun sekä pelaajanimet että pisteet on kunnossa, Tallenna-nappi (4) muuttuu painettavaksi. Ekalla kerralla se kysyy tiedostoa johon tallennetaan. Jos valitsee olemassaolevan tiedoston, tulokset lisätään sen loppuun (ts. ei ylikirjoita vaan vanhat tulokset säilytetään).
 
 Tulosten käpistelypuolta ei ole vielä tehty (pelaajan pelien nettosummat, uma-laskenta jne). Tulossa aikanaan.
