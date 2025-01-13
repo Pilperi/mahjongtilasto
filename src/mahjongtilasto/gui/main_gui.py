@@ -13,6 +13,36 @@ from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_ERROR, STYLESHEET_O
 LOGGER = logging.getLogger(__name__)
 
 
+class UusiPelaaja(QtWidgets.QDialog):
+    '''Ikkuna uuden pelaajan nickin syöttämiseen, rajoitetulla merkistöllä.
+    '''
+    nick_validator = QtGui.QRegExpValidator(
+        QtCore.QRegExp("([A-Öa-ö0-9!,.\-;:_*/]*[ ]?[A-Öa-ö0-9!,.\-;:_*/]*)*"))
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setWindowTitle("Lisää uusi pelaaja")
+        self.setStyleSheet(STYLESHEET_NORMAL)
+        self.centralwidget = QtWidgets.QWidget(self)
+        self.layout = QtWidgets.QVBoxLayout()
+        self.centralwidget.setLayout(self.layout)
+        self.layout.addWidget(QtWidgets.QLabel("Pelaajan nimi"))
+        self.nimikentta = QtWidgets.QLineEdit(alignment=QtCore.Qt.AlignRight)
+        self.nimikentta.setMaxLength(32)
+        self.layout.addWidget(self.nimikentta)
+        # Rajoitetaan nick
+        self.nimikentta.setValidator(UusiPelaaja.nick_validator)
+        # Ok Cancel
+        self.napit = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        )
+        self.napit.accepted.connect(self.accept)
+        self.napit.rejected.connect(self.reject)
+        self.layout.addWidget(self.napit)
+        self.setLayout(self.layout)
+        self.setModal(True)
+        self.show()
+
+
 class Paaikkuna(QtWidgets.QMainWindow):
     def __init__(self, pelaajalista=None):
         super().__init__()
@@ -179,14 +209,10 @@ class Paaikkuna(QtWidgets.QMainWindow):
         '''Lisää uusi pelaaja pelaajalistaan.
         Aseta valituksi kenttään josta lisäys tapahtui, muissa tokavikaksi.
         '''
-        while True:
-            pelaajan_nimi, ok_cancel = QtWidgets.QInputDialog.getText(
-                self.centralwidget,
-                "Uuden pelaajan nick",
-                "Pelaaja (ei saa alkaa #)"
-            )
-            if ok_cancel and not pelaajan_nimi.startswith("#"):
-                break
+        kyselyikkuna = UusiPelaaja(self.centralwidget)
+        ok_cancel = kyselyikkuna.exec()
+        # Luetaan pelaajan nimi, mahdollinen loppuvälilyönti veks
+        pelaajan_nimi = kyselyikkuna.nimikentta.text().rstrip()
         if ok_cancel and len(pelaajan_nimi):
             LOGGER.debug("Pelaajalisäys OK")
             # Tarkistetaan onko pelaaja jo pelaajalistassa
