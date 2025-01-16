@@ -76,7 +76,7 @@ class Paaikkuna(QtWidgets.QMainWindow):
         # Pelaajien nimet
         if not isinstance(pelaajalista, list):
             pelaajalista = []
-        self.pelaajavaihtoehdot = sorted(pelaajalista, key=lambda t: t.lower()).copy()
+        self.pelaajavaihtoehdot = pelaajalista
         self.pelaajavaihtoehdot.extend("+")
         self.pelaajavalikot = (
             QtWidgets.QComboBox(),
@@ -89,23 +89,16 @@ class Paaikkuna(QtWidgets.QMainWindow):
         self.pelaaja_etela = self.pelaajavalikot[1]
         self.pelaaja_lansi = self.pelaajavalikot[2]
         self.pelaaja_pohjoinen = self.pelaajavalikot[3]
+        self.tayta_pelaajanimet()
         # Signaalit pelaajanimiin
         self.pelaaja_ita.currentIndexChanged.connect(
             lambda t: self.vaihda_pelaajaa(self.pelaaja_ita))
-        self.pelaaja_ita.addItems(["Pelaaja itä"])
-        self.pelaaja_ita.addItems([nimi for nimi in self.pelaajavaihtoehdot])
         self.pelaaja_etela.currentIndexChanged.connect(
             lambda t: self.vaihda_pelaajaa(self.pelaaja_etela))
-        self.pelaaja_etela.addItems(["Pelaaja etelä"])
-        self.pelaaja_etela.addItems([nimi for nimi in self.pelaajavaihtoehdot])
         self.pelaaja_lansi.currentIndexChanged.connect(
             lambda t: self.vaihda_pelaajaa(self.pelaaja_lansi))
-        self.pelaaja_lansi.addItems(["Pelaaja länsi"])
-        self.pelaaja_lansi.addItems([nimi for nimi in self.pelaajavaihtoehdot])
         self.pelaaja_pohjoinen.currentIndexChanged.connect(
             lambda t: self.vaihda_pelaajaa(self.pelaaja_pohjoinen))
-        self.pelaaja_pohjoinen.addItems(["Pelaaja pohjoinen"])
-        self.pelaaja_pohjoinen.addItems([nimi for nimi in self.pelaajavaihtoehdot])
         # Pisteiden syöttökentät
         validaattori_piste = QtGui.QRegExpValidator(
             QtCore.QRegExp("[-+]?[0-9]*[\\.\\,]?[0-9]?"))
@@ -161,6 +154,43 @@ class Paaikkuna(QtWidgets.QMainWindow):
         self.grid.addWidget(self.nappi_tallenna, 5,11,1,10)
         self.show()
 
+    def tayta_pelaajanimet(self):
+        '''Täytä pelaajanimet pudotusvalikoihin, aakkosjärjestyksessä.
+        '''
+        # Blokkaa signaalit operaatioiden ajaksi
+        self.pelaaja_ita.blockSignals(True)
+        self.pelaaja_etela.blockSignals(True)
+        self.pelaaja_lansi.blockSignals(True)
+        self.pelaaja_pohjoinen.blockSignals(True)
+        # Tyhjennä vanhat arvot
+        self.pelaaja_ita.clear()
+        self.pelaaja_etela.clear()
+        self.pelaaja_lansi.clear()
+        self.pelaaja_pohjoinen.clear()
+        # Sorttaa kaikki paitsi lopun '+'
+        LOGGER.debug("Pelaajavaihtoehdot ennen sorttia: %s", self.pelaajavaihtoehdot)
+        self.pelaajavaihtoehdot[:-1] = sorted(self.pelaajavaihtoehdot[:-1], key=lambda t: t.lower())
+        LOGGER.debug("Pelaajavaihtoehdot sortattuna: %s", self.pelaajavaihtoehdot)
+        # aseta pudotusvalikoihin
+        self.pelaaja_ita.addItems(["Pelaaja itä"])
+        self.pelaaja_ita.addItems([nimi for nimi in self.pelaajavaihtoehdot])
+        self.pelaaja_etela.addItems(["Pelaaja etelä"])
+        self.pelaaja_etela.addItems([nimi for nimi in self.pelaajavaihtoehdot])
+        self.pelaaja_lansi.addItems(["Pelaaja länsi"])
+        self.pelaaja_lansi.addItems([nimi for nimi in self.pelaajavaihtoehdot])
+        self.pelaaja_pohjoinen.addItems(["Pelaaja pohjoinen"])
+        self.pelaaja_pohjoinen.addItems([nimi for nimi in self.pelaajavaihtoehdot])
+        # Värit kohdilleen
+        self.pelaaja_ita.setStyleSheet(STYLESHEET_NORMAL)
+        self.pelaaja_etela.setStyleSheet(STYLESHEET_NORMAL)
+        self.pelaaja_lansi.setStyleSheet(STYLESHEET_NORMAL)
+        self.pelaaja_pohjoinen.setStyleSheet(STYLESHEET_NORMAL)
+        # Signaalit takas päälle
+        self.pelaaja_ita.blockSignals(False)
+        self.pelaaja_etela.blockSignals(False)
+        self.pelaaja_lansi.blockSignals(False)
+        self.pelaaja_pohjoinen.blockSignals(False)
+
     def vaihda_pelaajaa(self, tuuli):
         '''Vaihda valitun tuulen pelaajaa.
 
@@ -189,11 +219,13 @@ class Paaikkuna(QtWidgets.QMainWindow):
             if pelaaja_nimi == '':
                 self.validit_pelaajat = False
                 continue
+            pelaajan_tuuli = TUULET[pelaajaindex]
             valinta = pelaajavalinnat[pelaajaindex]
             n_eri_paikalla = pelaajavalinnat.count(valinta)
             # Useammassa läsnä (eikä paikan nimi)
             if valinta and n_eri_paikalla > 1:
-                LOGGER.warning("'%s' on %d eri paikalla", pelaaja_nimi, n_eri_paikalla)
+                LOGGER.warning("%s: '%s' on %d eri paikalla",
+                    pelaajan_tuuli, pelaaja_nimi, n_eri_paikalla)
                 pelaaja.setStyleSheet(STYLESHEET_ERROR)
                 self.validit_pelaajat = False
             # OK
@@ -226,7 +258,7 @@ class Paaikkuna(QtWidgets.QMainWindow):
                     LOGGER.debug("Tallenna '%s' pelaajatiedostoon", pelaajan_nimi)
                     fopen.write(f"{pelaajan_nimi}\n")
                 paikka = len(self.pelaajavaihtoehdot)
-                self.pelaajavaihtoehdot.insert(paikka, pelaajan_nimi)
+                self.pelaajavaihtoehdot.insert(paikka-1, pelaajan_nimi)
                 for pelaaja in self.pelaajavalikot:
                     # Muutoin tunnistaa currentIndexChanged
                     # ja jää looppaamaan
@@ -336,6 +368,9 @@ class Paaikkuna(QtWidgets.QMainWindow):
     def reset(self):
         '''Aseta kentät takaisin alkuarvoihin
         '''
+        # Pelaajanimet järkkään
+        self.tayta_pelaajanimet()
+        # Pistelootat tyhjiksi
         for pelaaja_ind, pistetulos in enumerate(self.pistelaatikot):
             self.pelaajavalikot[pelaaja_ind].setCurrentIndex(0)
             pistetulos.clear()
@@ -344,7 +379,7 @@ def main():
     '''Käynnistää Paaikkunan.
     '''
     app = QtWidgets.QApplication([])
-    ikkuna = Paaikkuna(
+    Paaikkuna(
         pelaajalista=sorted(list(PELAAJAT))
         )
     sys.exit(app.exec_())
