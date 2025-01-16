@@ -260,13 +260,13 @@ class Paaikkuna(QtWidgets.QMainWindow):
             pistesumma += pisteet
             LOGGER.debug("Pistesumma %.1f", pisteet)
         pistesumma = round(pistesumma, 1) # fp-pyöristykset veks
-        if any(abs(pistesumma-ps) < 0.1 for ps in VALIDIT_PISTESUMMAT):
+        if any((erotus := abs(pistesumma - ps)) < 1e-3 for ps in VALIDIT_PISTESUMMAT):
             self.pistesumma.setStyleSheet(STYLESHEET_OK)
             self.pistesumma.setText(f"{pistesumma:.1f}")
-            LOGGER.debug("Pistesumma OK")
+            LOGGER.debug("Pistesumma OK. Pistesumma: %.1f, Erotus: %f", pistesumma, erotus)
         else:
             self.pistesumma.setStyleSheet(STYLESHEET_ERROR)
-            LOGGER.debug("Pistesumma ei täsmää")
+            LOGGER.debug("Pistesumma ei täsmää. Pistesumma: %.1f, Erotus: %f", pistesumma, erotus)
             self.validit_pisteet = False
             # Etsi lähin mätsäävä
             lahin_erotus = None
