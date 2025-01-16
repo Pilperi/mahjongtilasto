@@ -57,13 +57,12 @@ class Paaikkuna(QtWidgets.QMainWindow):
         # Tuloksen validius
         self.validit_pelaajat = False
         self.validit_pisteet = False
-        self.validi_kirjaus = False
         # Tallennus
         self.nappi_tallenna = QtWidgets.QPushButton()
-        self.nappi_tallenna.setFocusPolicy(QtCore.Qt.NoFocus)
+        # self.nappi_tallenna.setFocusPolicy(QtCore.Qt.NoFocus)
         self.nappi_tallenna.setText("Tallenna")
-        self.nappi_tallenna.setEnabled(False)
         self.nappi_tallenna.clicked.connect(self.tallenna_tulos)
+        self.nappi_tallenna.setEnabled(False)
         # Kenttien nimet
         self.text_ita = QtWidgets.QLabel(
             "東", alignment=QtCore.Qt.AlignLeft)
@@ -154,6 +153,16 @@ class Paaikkuna(QtWidgets.QMainWindow):
         self.grid.addWidget(self.nappi_tallenna, 5,11,1,10)
         self.show()
 
+    def keyPressEvent(self, event):
+        '''Rekisteröi näppäimistöpainallukset.
+
+        Lähinnä: enter menee Tallenna-nappiin
+        '''
+        if event.key() in (QtCore.Qt.Key_Enter, QtCore.Qt.Key_Return):
+            self.tarkista_validius()
+            if self.nappi_tallenna.isEnabled():
+                self.tallenna_tulos()
+
     def tayta_pelaajanimet(self):
         '''Täytä pelaajanimet pudotusvalikoihin, aakkosjärjestyksessä.
         '''
@@ -209,12 +218,12 @@ class Paaikkuna(QtWidgets.QMainWindow):
             self.lisaa_pelaaja(tuuli)
         # Tarkista onko sama pelaaja valittu kahteen paikkaan
         pelaajavalinnat = [
-            pelaaja.currentIndex()
-            for pelaaja in self.pelaajavalikot
+            pelaajavalikko.currentIndex()
+            for pelaajavalikko in self.pelaajavalikot
             ]
         self.validit_pelaajat = True
-        for pelaajaindex, pelaaja in enumerate(self.pelaajavalikot):
-            pelaaja_nimi = pelaaja.currentText()
+        for pelaajaindex, pelaajavalikko in enumerate(self.pelaajavalikot):
+            pelaaja_nimi = pelaajavalikko.currentText()
             # (init-rutiini)
             if pelaaja_nimi == '':
                 self.validit_pelaajat = False
@@ -224,16 +233,16 @@ class Paaikkuna(QtWidgets.QMainWindow):
             n_eri_paikalla = pelaajavalinnat.count(valinta)
             # Useammassa läsnä (eikä paikan nimi)
             if valinta and n_eri_paikalla > 1:
-                LOGGER.warning("%s: '%s' on %d eri paikalla",
+                LOGGER.debug("%s: '%s' on %d eri paikalla",
                     pelaajan_tuuli, pelaaja_nimi, n_eri_paikalla)
-                pelaaja.setStyleSheet(STYLESHEET_ERROR)
+                pelaajavalikko.setStyleSheet(STYLESHEET_ERROR)
                 self.validit_pelaajat = False
             # OK
             elif valinta:
-                pelaaja.setStyleSheet(STYLESHEET_OK)
+                pelaajavalikko.setStyleSheet(STYLESHEET_OK)
             # Pelaajapaikka
             else:
-                pelaaja.setStyleSheet(STYLESHEET_NORMAL)
+                pelaajavalikko.setStyleSheet(STYLESHEET_NORMAL)
                 self.validit_pelaajat = False
         self.tarkista_validius()
 
@@ -242,15 +251,15 @@ class Paaikkuna(QtWidgets.QMainWindow):
         Aseta valituksi kenttään josta lisäys tapahtui, muissa tokavikaksi.
         '''
         kyselyikkuna = UusiPelaaja(self.centralwidget)
-        ok_cancel = kyselyikkuna.exec()
+        ok_painettu = kyselyikkuna.exec()
         # Luetaan pelaajan nimi, mahdollinen loppuvälilyönti veks
         pelaajan_nimi = kyselyikkuna.nimikentta.text().rstrip()
-        if ok_cancel and len(pelaajan_nimi):
+        if ok_painettu and len(pelaajan_nimi):
             LOGGER.debug("Pelaajalisäys OK")
             # Tarkistetaan onko pelaaja jo pelaajalistassa
             on_jo_listassa = any(
                 vanha_pelaaja.casefold() == pelaajan_nimi.casefold()
-                for vanha_pelaaja in self.pelaajavaihtoehdot
+                for vanha_pelaaja in self.pelaajavaihtoehdot[:-1]
             )
             if not on_jo_listassa:
                 LOGGER.debug("%s ei pelaajalistassa, valid", pelaajan_nimi)
@@ -362,7 +371,7 @@ class Paaikkuna(QtWidgets.QMainWindow):
         infobox = QtWidgets.QMessageBox(self.centralwidget)
         infobox.setWindowTitle("Tallennettu")
         infobox.setText(f"{self.tulostiedosto}\n{aikaleima}")
-        _ = infobox.exec()
+        infobox.exec()
         self.reset()
 
     def reset(self):
