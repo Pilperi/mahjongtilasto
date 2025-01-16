@@ -1,5 +1,8 @@
 '''Yksinkertainen GUI tulosten hallinnointiin
 '''
+# Komentokehotteen CTRL+C tappaa prosessin
+import signal
+signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 STYLESHEET_NORMAL = "background-color: #31363b; color: white;"
 STYLESHEET_ERROR = "background-color: #ff6a9a; color: black;"
