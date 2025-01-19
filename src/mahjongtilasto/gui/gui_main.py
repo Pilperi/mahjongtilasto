@@ -9,6 +9,7 @@ from mahjongtilasto import KOTIKANSIO, TUULET, VALIDIT_PISTESUMMAT
 from mahjongtilasto import parseri
 from mahjongtilasto import PELAAJAT, PELAAJATIEDOSTO
 from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_ERROR, STYLESHEET_OK, STYLESHEET_NA, STYLESHEET_TOOLTIP
+from mahjongtilasto.gui import gui_tulostilastot
 
 LOGGER = logging.getLogger(__name__)
 
@@ -373,6 +374,8 @@ class Paaikkuna(QtWidgets.QMainWindow):
         infobox.setText(f"{self.tulostiedosto}\n{aikaleima}")
         infobox.exec()
         self.reset()
+        tulosikkuna = gui_tulostilastot.TulosTilastot(self.tulostiedosto)
+        tulosikkuna.exec()
 
     def reset(self):
         '''Aseta kentät takaisin alkuarvoihin

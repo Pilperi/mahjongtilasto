@@ -25,6 +25,9 @@ with open(PELAAJATIEDOSTO, "r", encoding="UTF-8") as fopen:
             PELAAJAT.add(rivi)
 
 TUULET = ("ITÄ", "ETELÄ", "LÄNSI", "POHJOINEN")
+
+# Pistemääritelmät
+# Validit aloituspisteet
 VALIDIT_PISTESUMMAT = (
     4*25_000,
     4*25.0,
@@ -32,3 +35,5 @@ VALIDIT_PISTESUMMAT = (
     4*30_000,
     4*30.0,
 )
+# Oletus-uma (EMA 15/5)
+UMA_DEFAULT = (15_000, 5000, -5000, -15_000)

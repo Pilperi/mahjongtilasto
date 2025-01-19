@@ -4,7 +4,7 @@ TODO.
 
 import logging
 from mahjongtilasto.argumentit import parse_sisaantuloargumentit
-from mahjongtilasto.gui import main_gui
+from mahjongtilasto.gui import gui_main
 
 LOGGER = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ def main():
         else:
             logger.setLevel(args.verbose)
         LOGGER.info("Lisättiin verboosi loggeri")
-    main_gui.main()
+    gui_main.main()
 
 if __name__ == "__main__":
     main()

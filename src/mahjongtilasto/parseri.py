@@ -28,6 +28,9 @@ def parse_id(rivi: str):
         LOGGER.debug("Ei validi ID %s", rivi)
         return None
     rivi = rivi.rstrip()
+    # Tyhjä rivi: älä laita logiin mitään
+    if not len(rivi):
+        return None
     splitattu = rivi.split("-")
     # Ei oikeaa määrää elementtejä
     if len(splitattu) < 4:
@@ -186,11 +189,15 @@ def laske_sijoitukset(pisteet: list):
     '''
     sijoitukset = [[] for _ in pisteet]
     sijoitus = 1
+    LOGGER.debug("Pisteet %s", pisteet)
     for piste_ind, piste in enumerate(sorted(pisteet, reverse=True)):
+        LOGGER.debug("Piste %s %d suurin", piste, sijoitus)
         for pelaaja_ind, pelaaja_piste in enumerate(pisteet):
             # Asetetaan sijoitus
             if pelaaja_piste == piste:
                 sijoitukset[pelaaja_ind].append(sijoitus)
+                LOGGER.debug("Piste on pelaajalla %s, sijoitukset %s",
+                    TUULET[pelaaja_ind], sijoitukset[pelaaja_ind])
         sijoitus += 1
     return sijoitukset
 
@@ -216,9 +223,10 @@ def pelaajadelta(tiedostopolku: str, pelaaja: str):
         LOGGER.error("Tiedostopolku '%s' ei ole validi!")
         raise ValueError(f"Tiedostopolku {tiedostopolku:s} ei ole validi!")
     tulokset = {
-        "delta": 0.0,
+        "delta": 0,
         "delta_vals": [],
         "sijoitukset": [],
+        "peleja": 0,
     }
     with open(tiedostopolku, "r", encoding="utf-8") as fopen:
         rivi = fopen.readline()
@@ -233,14 +241,16 @@ def pelaajadelta(tiedostopolku: str, pelaaja: str):
                 for tuuli_index, tuuli in enumerate(TUULET):
                     rivi = fopen.readline().rstrip()
                     tulos[tuuli_index] = parse_pelaajatulos(rivi)
-                    LOGGER.debug("%s tulos %s", tuuli, tulokset[aikaleima][tuuli_index])
-                sijoitukset = laske_sijoitukset(tulos)
-                for nimi, piste in tulos:
+                    LOGGER.debug("%s tulos %s", tuuli, tulos[tuuli_index])
+                sijoitukset = laske_sijoitukset([t[1] for t in tulos])
+                for pelipaikka, (nimi, piste) in enumerate(tulos):
                     if nimi == pelaaja:
                         aloituspisteet = sum(tls[1] for tls in tulos)/4
                         delta = piste - aloituspisteet
-                        tulokset["delta"] += delta
+                        tulokset["delta"] += int(delta)
                         tulokset["delta_vals"].append(delta)
+                        tulokset["sijoitukset"].append(sijoitukset[pelipaikka])
+                        tulokset["peleja"] += 1
                         break
                 else:
                     LOGGER.debug("%s ei pelannut pelissä %s", pelaaja, aikaleima)
