@@ -106,16 +106,16 @@ class TulosTilastot(QtWidgets.QDialog):
         self.tayta_pelaajastats()
         # Nimimerkit
         self.sarake_pelaajanimet.clear()
-        st_pelaajanimet = "Nimi\n\n\n"
+        st_pelaajanimet = "Nimi\n\n"
         # Raa'at pisteet
         self.sarake_pistesummat_raaka.clear()
-        st_pistesummat_raaka = "Pisteet\n\n\n"
+        st_pistesummat_raaka = "Pisteet\n\n"
         # Umat
         self.sarake_pistesummat_uma.clear()
-        st_pistesummat_uma = "Uma\n\n\n"
+        st_pistesummat_uma = "Uma\n\n"
         # Kokonaispisteet
         self.sarake_pistesummat_tot.clear()
-        st_pistesummat_tot = "Yht.\n\n\n"
+        st_pistesummat_tot = "Yht.\n\n"
         # Pelimäärä
         self.sarake_pelimaara.clear()
         st_pelimaara = "Pelejä\n\n\n"

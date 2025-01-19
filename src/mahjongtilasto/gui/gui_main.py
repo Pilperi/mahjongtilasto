@@ -152,7 +152,30 @@ class Paaikkuna(QtWidgets.QMainWindow):
         self.grid.addWidget(self.pisteet_pohjoinen, 3,11,1,10)
         self.grid.addWidget(self.pistesumma, 4,11,1,10)
         self.grid.addWidget(self.nappi_tallenna, 5,11,1,10)
+        # Menubar
+        self._lisaa_menubar()
         self.show()
+
+    def _lisaa_menubar(self):
+        '''Lisää ikkunaan menubar'''
+        menu = QtWidgets.QMenuBar(self)
+        stats_menu = QtWidgets.QMenu("&Stats", self)
+        self.action_nayta_pisteet = QtWidgets.QAction("Pistesumma", self)
+        self.action_nayta_pisteet.triggered.connect(self.nayta_pistesummat)
+        stats_menu.addAction(self.action_nayta_pisteet)
+        menu.addMenu(stats_menu)
+        self.setMenuBar(menu)
+
+    def nayta_pistesummat(self):
+        '''Näytä pistesummaikkuna.'''
+        LOGGER.debug("Näytä pistesummat pelaajille")
+        # Tarkistetaan että tulostiedosto on validi
+        if self.tulostiedosto is None:
+            if not self.valitse_tulostiedosto():
+                return
+        # Näytetään tulokset
+        tulosikkuna = gui_tulostilastot.TulosTilastot(self.tulostiedosto)
+        tulosikkuna.exec()
 
     def keyPressEvent(self, event):
         '''Rekisteröi näppäimistöpainallukset.
@@ -336,22 +359,33 @@ class Paaikkuna(QtWidgets.QMainWindow):
             self.nappi_tallenna.setStyleSheet(STYLESHEET_NORMAL)
             self.nappi_tallenna.setEnabled(True)
 
+    def valitse_tulostiedosto(self):
+        '''Valitse tulostiedoston sijainti.
+
+        Palauttaa
+        ---------
+        bool
+            True jos valittiin tiedosto, False muutoin.
+        '''
+        LOGGER.debug("Valitse tulostiedosto")
+        oletuspolku = os.path.join(KOTIKANSIO, time.strftime("pelit_%Y.txt"))
+        tiedostopolku, ok_cancel = QtWidgets.QFileDialog.getSaveFileName(
+            self.centralwidget,
+            "Valitse tulostiedosto",
+            oletuspolku,
+            "Tekstitiedostot (*.txt)",
+            options=QtWidgets.QFileDialog.DontConfirmOverwrite,
+        )
+        if ok_cancel:
+            self.tulostiedosto = tiedostopolku
+            return True
+        return False
+
     def tallenna_tulos(self):
         '''Tallenna tulos tiedostoon.
         '''
         if self.tulostiedosto is None:
-            LOGGER.debug("Valitse tiedosto johon tallennetaan")
-            oletuspolku = os.path.join(KOTIKANSIO, time.strftime("pelit_%Y.txt"))
-            tiedostopolku, ok_cancel = QtWidgets.QFileDialog.getSaveFileName(
-                self.centralwidget,
-                "Tallenna tulokset tiedostoon",
-                oletuspolku,
-                "Tekstitiedostot (*.txt)",
-                options=QtWidgets.QFileDialog.DontConfirmOverwrite,
-            )
-            if ok_cancel:
-                self.tulostiedosto = tiedostopolku
-            else:
+            if not self.valitse_tulostiedosto():
                 return
         LOGGER.debug("Tallenna tiedostoon '%s'", self.tulostiedosto)
         aikaleima = time.strftime("%Y-%m-%d-%H-%M-%S")
@@ -374,8 +408,6 @@ class Paaikkuna(QtWidgets.QMainWindow):
         infobox.setText(f"{self.tulostiedosto}\n{aikaleima}")
         infobox.exec()
         self.reset()
-        tulosikkuna = gui_tulostilastot.TulosTilastot(self.tulostiedosto)
-        tulosikkuna.exec()
 
     def reset(self):
         '''Aseta kentät takaisin alkuarvoihin
