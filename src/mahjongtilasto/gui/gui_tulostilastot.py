@@ -3,9 +3,10 @@
 Simppeli näin alkuun, paranee ajan kanssa.
 '''
 import os
+import datetime
 import logging
 from PyQt5 import QtCore,QtWidgets
-from mahjongtilasto import UMA_DEFAULT
+from mahjongtilasto import UMA_DEFAULT, AIKADELTAT
 from mahjongtilasto import parseri
 from mahjongtilasto.gui import STYLESHEET_NORMAL
 
@@ -20,8 +21,17 @@ class TulosTilastot(QtWidgets.QDialog):
         self.setWindowTitle("Pelistatistiikat")
         self.setStyleSheet(STYLESHEET_NORMAL)
         self.centralwidget = QtWidgets.QWidget(self)
-        self.layout = QtWidgets.QHBoxLayout()
+        self.layout = QtWidgets.QVBoxLayout(self)
+        # Valinta aikaikkunalle (mitkä pelit otetaan mukaan)
+        self.aikadelta = None # kaikki
+        self.valinta_aika = QtWidgets.QComboBox(self)
+        self.valinta_aika.addItems(["Kaikki", "6 kk", "3 kk", "1 kk"])
+        self.valinta_aika.currentIndexChanged.connect(self.vaihda_aikaikkunaa)
         # Tekstisarakkeet
+        # TODO: nämä pitäisi tehdä jollain muulla kuin QLabel, koska
+        # isolla pelaajamäärällä alkaa leikkautua. QTextEdit readonly olisi scrollattava,
+        # mutta pitäisi saada kaikki sarakkeet scrollaamaan samaan tahtiin.
+        self.layout_txt = QtWidgets.QHBoxLayout(self)
         # Nimimerkki
         self.sarake_pelaajanimet = QtWidgets.QLabel(self)
         self.sarake_pelaajanimet.setAlignment(QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
@@ -38,15 +48,19 @@ class TulosTilastot(QtWidgets.QDialog):
         self.sarake_pelimaara = QtWidgets.QLabel(self)
         self.sarake_pelimaara.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
         # Lisää ikkunaan
-        self.layout.addWidget(self.sarake_pelaajanimet)
-        self.layout.addWidget(self.sarake_pistesummat_raaka)
-        self.layout.addWidget(self.sarake_pistesummat_uma)
-        self.layout.addWidget(self.sarake_pistesummat_tot)
-        self.layout.addWidget(self.sarake_pelimaara)
+        # Sarakkeet tekstilayouttiin
+        self.layout_txt.addWidget(self.sarake_pelaajanimet)
+        self.layout_txt.addWidget(self.sarake_pistesummat_raaka)
+        self.layout_txt.addWidget(self.sarake_pistesummat_uma)
+        self.layout_txt.addWidget(self.sarake_pistesummat_tot)
+        self.layout_txt.addWidget(self.sarake_pelimaara)
+        # Aikaikkuna ikkunalayouttiin
+        self.layout.addWidget(self.valinta_aika)
+        # Tekstilayout ikkunalayouttiin
+        self.layout.addLayout(self.layout_txt)
         # Uman arvo
         self.uma_suuruus = UMA_DEFAULT
         self.centralwidget.setLayout(self.layout)
-        self.setLayout(self.layout)
         self.setModal(True)
         # Lue tulokset tiedostosta ja täytä tekstikenttään
         assert os.path.isfile(tulostiedosto), f"Tulostiedosto '{tulostiedosto}' ei validi!"
@@ -59,6 +73,7 @@ class TulosTilastot(QtWidgets.QDialog):
     def tayta_pelaajastats(self):
         '''Lue pelaajien tilastot tulostiedostosta.
         '''
+        self.pelaajastats = [] # Nollaa
         if not isinstance(self.pelaajat, (list, tuple)):
             LOGGER.debug("Lue pelaajalista tulostiedostosta")
             kaikki_tulokset = parseri.parse_txt_dictiksi(self.tulostiedosto)
@@ -69,6 +84,9 @@ class TulosTilastot(QtWidgets.QDialog):
                     if tuulen_tulos[0] not in self.pelaajat:
                         LOGGER.debug("Lisää pelaaja '%s'", tuulen_tulos[0])
                         self.pelaajat.append(tuulen_tulos[0])
+        # Jos aikarajaus, katsotaan mikä aika nyt on
+        nykyhetki = datetime.date.today()
+        jalkeen_ajan = None if self.aikadelta is None else nykyhetki - self.aikadelta
         # Lue pelaajakohtaiset tulokset
         LOGGER.debug("Lue pelaajakohtaiset tulokset")
         for pelaajan_nimi in self.pelaajat:
@@ -76,7 +94,9 @@ class TulosTilastot(QtWidgets.QDialog):
                 "nimi": pelaajan_nimi,
                 **parseri.pelaajadelta(
                     self.tulostiedosto,
-                    pelaajan_nimi)
+                    pelaajan_nimi,
+                    jalkeen_ajan=jalkeen_ajan,
+                    )
                 })
             LOGGER.debug("'%s' luettu, %d peliä",
                 pelaajan_nimi, self.pelaajastats[-1]["peleja"])
@@ -118,7 +138,7 @@ class TulosTilastot(QtWidgets.QDialog):
         st_pistesummat_tot = "Yht.\n\n"
         # Pelimäärä
         self.sarake_pelimaara.clear()
-        st_pelimaara = "Pelejä\n\n\n"
+        st_pelimaara = "Pelejä\n\n"
         for pelaaja in self.pelaajastats:
             st_pelaajanimet += f"{pelaaja['nimi']:s}\n"
             st_pistesummat_raaka += f" {pelaaja['delta']:d}\n"
@@ -130,3 +150,11 @@ class TulosTilastot(QtWidgets.QDialog):
         self.sarake_pistesummat_uma.setText(st_pistesummat_uma)
         self.sarake_pistesummat_tot.setText(st_pistesummat_tot)
         self.sarake_pelimaara.setText(st_pelimaara)
+
+    def vaihda_aikaikkunaa(self):
+        '''Vaihda aikaikkunan pituutta.
+        '''
+        # Katso mikä valittuna
+        self.aikadelta = AIKADELTAT.get(self.valinta_aika.currentText())
+        # Uudelleenpopuloi tulokset
+        self.tayta_tulokset()

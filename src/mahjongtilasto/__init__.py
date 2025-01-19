@@ -3,6 +3,7 @@
 Yksinkertainen kirjasto mahjong-pelitulosten hallinnointiin.
 '''
 import os
+import datetime
 
 __version__ = "2024.12.27.0"
 
@@ -37,3 +38,11 @@ VALIDIT_PISTESUMMAT = (
 )
 # Oletus-uma (EMA 15/5)
 UMA_DEFAULT = (15_000, 5000, -5000, -15_000)
+
+# Tulosten rajoittamiseen, valitse vain pelit jotka vaaditun tuoreita
+AIKADELTAT = {
+    "Kaikki": None,
+    "6 kk": datetime.timedelta(days=6*30),
+    "3 kk": datetime.timedelta(days=3*30),
+    "1 kk": datetime.timedelta(days=30),
+}

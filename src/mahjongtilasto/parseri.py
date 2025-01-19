@@ -1,6 +1,7 @@
 '''Pelitulosten parserifunktiot.'''
 import os
-import time
+# import time
+import datetime
 import logging
 from mahjongtilasto import TUULET
 
@@ -152,7 +153,7 @@ def lisaa_tulos_txt(pelitulos: list, tiedostopolku: str, aikaleima=None):
             LOGGER.error("Ei validi pelaajatulos %s", pelaajatulos)
             raise ValueError(f"Ei validi pelaajatulos {pelaajatulos}")
     if parse_id(aikaleima) is None:
-        aikaleima = time.strftime("%Y-%m-%d-%H-%M-%S")
+        aikaleima = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     with open(tiedostopolku, "a+") as fopen:
         LOGGER.debug(aikaleima)
         fopen.write(aikaleima+"\n")
@@ -201,7 +202,7 @@ def laske_sijoitukset(pisteet: list):
         sijoitus += 1
     return sijoitukset
 
-def pelaajadelta(tiedostopolku: str, pelaaja: str):
+def pelaajadelta(tiedostopolku: str, pelaaja: str, jalkeen_ajan=None):
     '''Etsi tuloslistasta tietyn pelaajan pistedelta.
 
     Parametrit
@@ -235,7 +236,28 @@ def pelaajadelta(tiedostopolku: str, pelaaja: str):
             rivi = rivi.rstrip()
             # ID: lue yksittäinen pelitulos
             aikaleima = parse_id(rivi)
-            if aikaleima is not None:
+            if aikaleima is None:
+                rivi = fopen.readline()
+                continue
+            # Kerta oli validi ID, katsotaan onko tarpeeksi tuore peli
+            mukaan_tuloksiin = True
+            if isinstance(jalkeen_ajan, datetime.date):
+                splitattu_aika = aikaleima.split("-")
+                pelin_aika = datetime.date(
+                    year=int(splitattu_aika[0]),
+                    month=int(splitattu_aika[1]),
+                    day=int(splitattu_aika[2]),
+                    )
+                if pelin_aika >= jalkeen_ajan:
+                    LOGGER.debug("'%s' on jälkeen '%s'",
+                        aikaleima, jalkeen_ajan.strftime("%Y-%m-%d"))
+                    mukaan_tuloksiin = True
+                else:
+                    LOGGER.debug("'%s' on ennen '%s', skip",
+                        aikaleima, jalkeen_ajan.strftime("%Y-%m-%d"))
+                    mukaan_tuloksiin = False
+            # Vain jos aikaleima täsmää
+            if mukaan_tuloksiin:
                 LOGGER.debug("Lue tulos %s", aikaleima)
                 tulos = [None for i in TUULET]
                 for tuuli_index, tuuli in enumerate(TUULET):
