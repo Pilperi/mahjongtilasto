@@ -8,7 +8,7 @@ import logging
 from PyQt5 import QtCore,QtWidgets
 from mahjongtilasto import UMA_DEFAULT, AIKADELTAT
 from mahjongtilasto import parseri
-from mahjongtilasto.gui import STYLESHEET_NORMAL
+from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_TABLEHEADER
 
 LOGGER = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class TulosTilastot(QtWidgets.QDialog):
         super().__init__(*args, **kwargs)
         self.setWindowTitle("Pelistatistiikat")
         self.setStyleSheet(STYLESHEET_NORMAL)
-        self.resize(800, 400)  # Pikkusen isompi alkuikkuna
+        # self.resize(800, 400)  # Pikkusen isompi alkuikkuna
 
         self.centralwidget = QtWidgets.QWidget(self)
         self.layout = QtWidgets.QVBoxLayout(self)
@@ -33,6 +33,8 @@ class TulosTilastot(QtWidgets.QDialog):
 
         # Taulukko statistiikalle
         self.taulukko = QtWidgets.QTableWidget(self)
+        self.taulukko.verticalHeader().setStyleSheet(STYLESHEET_TABLEHEADER)
+        self.taulukko.horizontalHeader().setStyleSheet(STYLESHEET_TABLEHEADER)
         self.taulukko.setColumnCount(5)
         self.taulukko.setHorizontalHeaderLabels(["Nimi", "Pisteet", "Uma", "Yht.", "Pelejä"])
 
@@ -113,6 +115,16 @@ class TulosTilastot(QtWidgets.QDialog):
             self.taulukko.setItem(row, 2, QtWidgets.QTableWidgetItem(str(pelaaja['uma_tot'])))
             self.taulukko.setItem(row, 3, QtWidgets.QTableWidgetItem(str(pelaaja['delta'] + pelaaja['uma_tot'])))
             self.taulukko.setItem(row, 4, QtWidgets.QTableWidgetItem(str(pelaaja['peleja'])))
+        # Säädä ikkunan koko sopivaksi
+        taulukon_leveys = self.taulukko.verticalHeader().width() + 4
+        for colind in range(self.taulukko.columnCount()):
+            taulukon_leveys += self.taulukko.columnWidth(colind)
+        LOGGER.debug("Taulukon leveys %s", taulukon_leveys)
+        taulukon_korkeus = self.taulukko.horizontalHeader().height() + 24
+        for rowind in range(self.taulukko.rowCount()):
+            taulukon_korkeus += self.taulukko.rowHeight(rowind)
+        LOGGER.debug("Taulukon korkeus %s", taulukon_korkeus)
+        self.resize(min(800, taulukon_leveys), min(800, taulukon_korkeus))
 
     def vaihda_aikaikkunaa(self):
         '''Vaihda aikaikkunan pituutta.

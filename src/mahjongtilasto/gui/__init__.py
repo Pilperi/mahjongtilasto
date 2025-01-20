@@ -17,3 +17,12 @@ STYLESHEET_TOOLTIP = '''QLineEdit {
     color: white;
     }
 '''
+STYLESHEET_TABLEHEADER = '''QTableWidget {
+    background-color: #31363b;
+    color: white;
+    }
+    QHeaderView::section {
+    background-color: #31363b;
+    color: white;
+    }
+'''
