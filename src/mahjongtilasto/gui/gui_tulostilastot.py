@@ -1,6 +1,6 @@
 '''Tulostilastojen katselutoiminnallisuudet.
 
-Simppeli näin alkuun, paranee ajan kanssa.
+Simppeli näin alkuun, paranee nyt.
 '''
 import os
 import datetime
@@ -20,48 +20,29 @@ class TulosTilastot(QtWidgets.QDialog):
         super().__init__(*args, **kwargs)
         self.setWindowTitle("Pelistatistiikat")
         self.setStyleSheet(STYLESHEET_NORMAL)
+        self.resize(800, 400)  # Pikkusen isompi alkuikkuna
+
         self.centralwidget = QtWidgets.QWidget(self)
         self.layout = QtWidgets.QVBoxLayout(self)
+
         # Valinta aikaikkunalle (mitkä pelit otetaan mukaan)
         self.aikadelta = None # kaikki
         self.valinta_aika = QtWidgets.QComboBox(self)
         self.valinta_aika.addItems(["Kaikki", "6 kk", "3 kk", "1 kk"])
         self.valinta_aika.currentIndexChanged.connect(self.vaihda_aikaikkunaa)
-        # Tekstisarakkeet
-        # TODO: nämä pitäisi tehdä jollain muulla kuin QLabel, koska
-        # isolla pelaajamäärällä alkaa leikkautua. QTextEdit readonly olisi scrollattava,
-        # mutta pitäisi saada kaikki sarakkeet scrollaamaan samaan tahtiin.
-        self.layout_txt = QtWidgets.QHBoxLayout(self)
-        # Nimimerkki
-        self.sarake_pelaajanimet = QtWidgets.QLabel(self)
-        self.sarake_pelaajanimet.setAlignment(QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
-        # Raa'at pisteet
-        self.sarake_pistesummat_raaka = QtWidgets.QLabel(self)
-        self.sarake_pistesummat_raaka.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
-        # Umasumma
-        self.sarake_pistesummat_uma = QtWidgets.QLabel(self)
-        self.sarake_pistesummat_uma.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
-        # Kokonaispisteet
-        self.sarake_pistesummat_tot = QtWidgets.QLabel(self)
-        self.sarake_pistesummat_tot.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
-        # Montako peliä takana
-        self.sarake_pelimaara = QtWidgets.QLabel(self)
-        self.sarake_pelimaara.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
-        # Lisää ikkunaan
-        # Sarakkeet tekstilayouttiin
-        self.layout_txt.addWidget(self.sarake_pelaajanimet)
-        self.layout_txt.addWidget(self.sarake_pistesummat_raaka)
-        self.layout_txt.addWidget(self.sarake_pistesummat_uma)
-        self.layout_txt.addWidget(self.sarake_pistesummat_tot)
-        self.layout_txt.addWidget(self.sarake_pelimaara)
-        # Aikaikkuna ikkunalayouttiin
+
+        # Taulukko statistiikalle
+        self.taulukko = QtWidgets.QTableWidget(self)
+        self.taulukko.setColumnCount(5)
+        self.taulukko.setHorizontalHeaderLabels(["Nimi", "Pisteet", "Uma", "Yht.", "Pelejä"])
+
+        # Widgetit layouttiin
         self.layout.addWidget(self.valinta_aika)
-        # Tekstilayout ikkunalayouttiin
-        self.layout.addLayout(self.layout_txt)
+        self.layout.addWidget(self.taulukko)
+
         # Uman arvo
         self.uma_suuruus = UMA_DEFAULT
-        self.centralwidget.setLayout(self.layout)
-        self.setModal(True)
+
         # Lue tulokset tiedostosta ja täytä tekstikenttään
         assert os.path.isfile(tulostiedosto), f"Tulostiedosto '{tulostiedosto}' ei validi!"
         self.tulostiedosto = tulostiedosto
@@ -121,40 +102,22 @@ class TulosTilastot(QtWidgets.QDialog):
         LOGGER.debug("Pelaajatilastot luettu tiedostosta")
 
     def tayta_tulokset(self):
-        '''Täytä pelaajatilastot tekstiboksiin.
+        '''Täytä pelaajatilastot taulukkoon.
         '''
         self.tayta_pelaajastats()
-        # Nimimerkit
-        self.sarake_pelaajanimet.clear()
-        st_pelaajanimet = "Nimi\n\n"
-        # Raa'at pisteet
-        self.sarake_pistesummat_raaka.clear()
-        st_pistesummat_raaka = "Pisteet\n\n"
-        # Umat
-        self.sarake_pistesummat_uma.clear()
-        st_pistesummat_uma = "Uma\n\n"
-        # Kokonaispisteet
-        self.sarake_pistesummat_tot.clear()
-        st_pistesummat_tot = "Yht.\n\n"
-        # Pelimäärä
-        self.sarake_pelimaara.clear()
-        st_pelimaara = "Pelejä\n\n"
-        for pelaaja in self.pelaajastats:
-            st_pelaajanimet += f"{pelaaja['nimi']:s}\n"
-            st_pistesummat_raaka += f" {pelaaja['delta']:d}\n"
-            st_pistesummat_uma += f" {pelaaja['uma_tot']:d}\n"
-            st_pistesummat_tot += f" {pelaaja['delta']+pelaaja['uma_tot']:d}\n"
-            st_pelimaara += f" {pelaaja['peleja']:d}\n"
-        self.sarake_pelaajanimet.setText(st_pelaajanimet)
-        self.sarake_pistesummat_raaka.setText(st_pistesummat_raaka)
-        self.sarake_pistesummat_uma.setText(st_pistesummat_uma)
-        self.sarake_pistesummat_tot.setText(st_pistesummat_tot)
-        self.sarake_pelimaara.setText(st_pelimaara)
+        self.taulukko.setRowCount(len(self.pelaajastats))
+
+        for row, pelaaja in enumerate(self.pelaajastats):
+            self.taulukko.setItem(row, 0, QtWidgets.QTableWidgetItem(pelaaja['nimi']))
+            self.taulukko.setItem(row, 1, QtWidgets.QTableWidgetItem(str(pelaaja['delta'])))
+            self.taulukko.setItem(row, 2, QtWidgets.QTableWidgetItem(str(pelaaja['uma_tot'])))
+            self.taulukko.setItem(row, 3, QtWidgets.QTableWidgetItem(str(pelaaja['delta'] + pelaaja['uma_tot'])))
+            self.taulukko.setItem(row, 4, QtWidgets.QTableWidgetItem(str(pelaaja['peleja'])))
 
     def vaihda_aikaikkunaa(self):
         '''Vaihda aikaikkunan pituutta.
         '''
-        # Katso mikä valittuna
+        # Katso mikä aikaikkuna valittuna
         self.aikadelta = AIKADELTAT.get(self.valinta_aika.currentText())
-        # Uudelleenpopuloi tulokset
+        # Aikadelta muuttunut, täytä tulokset uudestaan (note: jalkeen_ajan)
         self.tayta_tulokset()
