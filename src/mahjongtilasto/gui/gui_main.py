@@ -171,7 +171,7 @@ class Paaikkuna(QtWidgets.QMainWindow):
         LOGGER.debug("Näytä pistesummat pelaajille")
         # Tarkistetaan että tulostiedosto on validi
         if self.tulostiedosto is None:
-            if not self.valitse_tulostiedosto():
+            if not self.avaa_tulostiedosto():
                 return
         # Näytetään tulokset
         tulosikkuna = gui_tulostilastot.TulosTilastot(self.tulostiedosto)
@@ -370,6 +370,28 @@ class Paaikkuna(QtWidgets.QMainWindow):
         LOGGER.debug("Valitse tulostiedosto")
         oletuspolku = os.path.join(KOTIKANSIO, time.strftime("pelit_%Y.txt"))
         tiedostopolku, ok_cancel = QtWidgets.QFileDialog.getSaveFileName(
+            self.centralwidget,
+            "Valitse tulostiedosto",
+            oletuspolku,
+            "Tekstitiedostot (*.txt)",
+            options=QtWidgets.QFileDialog.DontConfirmOverwrite,
+        )
+        if ok_cancel:
+            self.tulostiedosto = tiedostopolku
+            return True
+        return False
+
+    def avaa_tulostiedosto(self):
+        '''avaa tulostiedoston sijainti.
+
+        Palauttaa
+        ---------
+        bool
+            True jos valittiin tiedosto, False muutoin.
+        '''
+        LOGGER.debug("Valitse tulostiedosto")
+        oletuspolku = os.path.join(KOTIKANSIO, time.strftime("pelit_%Y.txt"))
+        tiedostopolku, ok_cancel = QtWidgets.QFileDialog.getOpenFileName(
             self.centralwidget,
             "Valitse tulostiedosto",
             oletuspolku,
