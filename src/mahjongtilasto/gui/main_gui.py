@@ -260,22 +260,32 @@ class Paaikkuna(QtWidgets.QMainWindow):
             pistesumma += pisteet
             LOGGER.debug("Pistesumma %.1f", pisteet)
         pistesumma = round(pistesumma, 1) # fp-pyöristykset veks
-        if any((erotus := abs(pistesumma - ps)) < 1e-3 for ps in VALIDIT_PISTESUMMAT):
+        # Etsi lähin mätsäävä
+        nollaraja = 1E-3
+        lahin_erotus = None
+        lahin_validi = None
+        for validi in VALIDIT_PISTESUMMAT:
+            erotus = pistesumma - validi
+            if lahin_erotus is None:
+                lahin_erotus = erotus
+                lahin_validi = validi
+            elif abs(erotus) < abs(lahin_erotus):
+                lahin_erotus = erotus
+                lahin_validi = validi
+                # Täydellinen mätsi, lopetetaan
+                if abs(lahin_erotus) < nollaraja:
+                    break
+        # Katso onko nolla tai "nolla"
+        if abs(lahin_erotus) < nollaraja:
             self.pistesumma.setStyleSheet(STYLESHEET_OK)
             self.pistesumma.setText(f"{pistesumma:.1f}")
-            LOGGER.debug("Pistesumma OK. Pistesumma: %.1f, Erotus: %f", pistesumma, erotus)
+            LOGGER.debug("Pistesumma OK. Pistesumma: %.1f, lähin: %s erotuksella %f",
+                pistesumma, lahin_validi, lahin_erotus)
         else:
             self.pistesumma.setStyleSheet(STYLESHEET_ERROR)
-            LOGGER.debug("Pistesumma ei täsmää. Pistesumma: %.1f, Erotus: %f", pistesumma, erotus)
+            LOGGER.debug("Pistesumma ei täsmää. Pistesumma: %.1f, lähin: %s erotuksella %f",
+                pistesumma, lahin_validi, lahin_erotus)
             self.validit_pisteet = False
-            # Etsi lähin mätsäävä
-            lahin_erotus = None
-            for validi in VALIDIT_PISTESUMMAT:
-                erotus = pistesumma - validi
-                if lahin_erotus is None:
-                    lahin_erotus = erotus
-                elif abs(erotus) < abs(lahin_erotus):
-                    lahin_erotus = erotus
             self.pistesumma.setText(f"{pistesumma:.1f} ({lahin_erotus:+.1f})")
         # Joku vielä laittamatta: ei korosteta millään värillä
         if joku_laittamatta:
