@@ -37,6 +37,7 @@ class TulosTilastot(QtWidgets.QDialog):
         self.taulukko.horizontalHeader().setStyleSheet(STYLESHEET_TABLEHEADER)
         self.taulukko.setColumnCount(5)
         self.taulukko.setHorizontalHeaderLabels(["Nimi", "Pisteet", "Uma", "Yht.", "Pelejä"])
+        # self.taulukko.setSortingEnabled(True) # solut str, eli 0 > 100 > 20000 > 300
 
         # Widgetit layouttiin
         self.layout.addWidget(self.valinta_aika)

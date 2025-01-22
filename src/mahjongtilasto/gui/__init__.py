@@ -25,4 +25,8 @@ STYLESHEET_TABLEHEADER = '''QTableWidget {
     background-color: #31363b;
     color: white;
     }
+    QTableCornerButton::section {
+    background-color: #31363b;
+    color: white;
+    }
 '''
