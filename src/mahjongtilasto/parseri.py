@@ -3,7 +3,7 @@ import os
 # import time
 import datetime
 import logging
-from mahjongtilasto import TUULET
+from mahjongtilasto import TUULET, VALIDIT_PISTESUMMAT_10K, VALIDIT_PISTESUMMAT_100
 
 LOGGER = logging.getLogger(__name__)
 
@@ -64,9 +64,11 @@ def parse_pelaajatulos(rivi: str):
 
     Palauttaa
     ---------
-    tuple (str, int)
+    tuple (str, float)
         Tulosrivi parsitussa muodossa, ensin pelaajan nimi
-        ja sitten pistemäärä kokonaislukumuodossa (esim. 21300)
+        ja sitten pistemäärä liukulukuna (ts. tuhannella kertominen
+        tehtävä kun hanchanin kaikkien pelaajien pistemäärät luettu
+        ja niiden summasta päätelmiä tehty)
     '''
     splitattu = rivi.rstrip().split(" ")
     if len(splitattu) < 2:
@@ -75,13 +77,64 @@ def parse_pelaajatulos(rivi: str):
     pelaajanimi = " ".join(splitattu[:-1])
     try:
         pistetulos = float(splitattu[-1])
-        # 23.4 tai pelkkä 23
-        if "." in splitattu[-1] or pistetulos%100 != 0:
-            pistetulos *= 1000
     except ValueError as err:
         LOGGER.error("Ei validi tulosrivi '%s' (%s)", rivi, err)
         raise ValueError from err
-    return pelaajanimi, int(pistetulos)
+    return pelaajanimi, pistetulos
+
+def skaalaa_hanchanin_pisteet(pelaajatulokset: list):
+    '''Tee tarvittavat skaalailut pelaajien tuloksiin.
+
+    Muunnetaan 12.3 ja 12300.0 muotoon 12300
+    eli liukuluvusta kokonaisluvuksi ja tarpeen mukaan tuhannella kertoen.
+
+    Parametrit
+    ----------
+    pelaajatulokset : list
+        Pelaajien tulokset raa'asti luettuina, (nimi, pisteet) tuplearvoina.
+
+    Palauttaa
+    ---------
+    skaalatut_tulokset : list
+        Vastaava lista mutta jossa pisteitä tarpeen mukaan skaalailtu.
+    '''
+    pistesumma = round(sum(tulos[1] for tulos in pelaajatulokset), 1)
+    LOGGER.debug("Pisteet %s summaa %f", pelaajatulokset, pistesumma)
+    # 12.3
+    if pistesumma in VALIDIT_PISTESUMMAT_10K:
+       LOGGER.debug("Skaalataan pisteet tuhannella")
+       skaalatut_tulokset = [
+            (tulos[0], int(1000*tulos[1]))
+            for tulos in pelaajatulokset
+        ]
+    # 12300
+    elif pistesumma in VALIDIT_PISTESUMMAT_100:
+        LOGGER.debug("Ei skaalata pisteitä")
+        skaalatut_tulokset = [
+            (tulos[0], int(tulos[1]))
+            for tulos in pelaajatulokset
+        ]
+    elif pistesumma == 0.0:
+        LOGGER.debug("Nollasumma, katsotaan kummalla formaatilla")
+        if any((matsaava_tulos := tulos[1])%100 for tulos in pelaajatulokset):
+            LOGGER.debug("%s sisältää alle satasia, skaalataan tuhannella")
+            skaalatut_tulokset = [
+                (tulos[0], int(1000*tulos[1]))
+                for tulos in pelaajatulokset
+            ]
+        else:
+            LOGGER.debug("Ei skaalata pisteitä")
+            skaalatut_tulokset = [
+                (tulos[0], int(tulos[1]))
+                for tulos in pelaajatulokset
+            ]
+    else:
+        LOGGER.debug("Ei skaalata pisteitä")
+        skaalatut_tulokset = [
+            (tulos[0], int(tulos[1]))
+            for tulos in pelaajatulokset
+        ]
+    return skaalatut_tulokset
 
 
 def parse_txt_dictiksi(tiedostopolku: str):
@@ -111,11 +164,14 @@ def parse_txt_dictiksi(tiedostopolku: str):
             aikaleima = parse_id(rivi)
             if aikaleima is not None:
                 LOGGER.debug("Lue tulos %s", aikaleima)
-                tulokset[aikaleima] = [None for i in TUULET]
+                # Pistelukemat jotenkin vaan inee
+                raakatulos = [None for i in TUULET]
                 for tuuli_index, tuuli in enumerate(TUULET):
                     rivi = fopen.readline().rstrip()
-                    tulokset[aikaleima][tuuli_index] = parse_pelaajatulos(rivi)
-                    LOGGER.debug("%s tulos %s", tuuli, tulokset[aikaleima][tuuli_index])
+                    raakatulos[tuuli_index] = parse_pelaajatulos(rivi)
+                    LOGGER.debug("%s tulos %s", tuuli, raakatulos[tuuli_index])
+                # Katsotaan summaako pisteet 100 000 vai 100.0 vai mihin
+                tulokset[aikaleima] = skaalaa_hanchanin_pisteet(raakatulos)
             rivi = fopen.readline()
     return tulokset
 
@@ -264,6 +320,7 @@ def pelaajadelta(tiedostopolku: str, pelaaja: str, jalkeen_ajan=None):
                     rivi = fopen.readline().rstrip()
                     tulos[tuuli_index] = parse_pelaajatulos(rivi)
                     LOGGER.debug("%s tulos %s", tuuli, tulos[tuuli_index])
+                tulos = skaalaa_hanchanin_pisteet(tulos)
                 sijoitukset = laske_sijoitukset([t[1] for t in tulos])
                 for pelipaikka, (nimi, piste) in enumerate(tulos):
                     if nimi == pelaaja:

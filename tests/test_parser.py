@@ -63,11 +63,11 @@ def test_parse_pelaajatulos_pass():
     testr = "Pelaaja 21.3\n"
     parsetulos = parseri.parse_pelaajatulos(testr)
     assert parsetulos[0] == "Pelaaja"
-    assert parsetulos[1] == 21300
+    assert parsetulos[1] == 21.3
     testr = "Pelaaja -21.3\n"
     parsetulos = parseri.parse_pelaajatulos(testr)
     assert parsetulos[0] == "Pelaaja"
-    assert parsetulos[1] == -21300
+    assert parsetulos[1] == -21.3
     testr = "Pelaaja -21300\n"
     parsetulos = parseri.parse_pelaajatulos(testr)
     assert parsetulos[0] == "Pelaaja"
@@ -80,25 +80,25 @@ def test_parse_pelaajatulos_pass():
     testr = "Pelaaja jolla pitkä nimi 21.3\n"
     parsetulos = parseri.parse_pelaajatulos(testr)
     assert parsetulos[0] == "Pelaaja jolla pitkä nimi"
-    assert parsetulos[1] == 21300
+    assert parsetulos[1] == 21.3
     # 21.0 tiivistetty muotoon 21
     testr = "Pelaaja 21"
     parsetulos = parseri.parse_pelaajatulos(testr)
     assert parsetulos[0] == "Pelaaja"
-    assert parsetulos[1] == 21_000
+    assert parsetulos[1] == 21.0
     testr = "Pelaaja -21"
     parsetulos = parseri.parse_pelaajatulos(testr)
     assert parsetulos[0] == "Pelaaja"
-    assert parsetulos[1] == -21_000
+    assert parsetulos[1] == -21.0
     # 20.0 tiivistetty muotoon 20
     testr = "Pelaaja 20"
     parsetulos = parseri.parse_pelaajatulos(testr)
     assert parsetulos[0] == "Pelaaja"
-    assert parsetulos[1] == 20_000
+    assert parsetulos[1] == 20.0
     testr = "Pelaaja -20"
     parsetulos = parseri.parse_pelaajatulos(testr)
     assert parsetulos[0] == "Pelaaja"
-    assert parsetulos[1] == -20_000
+    assert parsetulos[1] == -20.0
     # 100.0 ei voi tiivistää muotoon 100
     testr = "Pelaaja 100"
     parsetulos = parseri.parse_pelaajatulos(testr)

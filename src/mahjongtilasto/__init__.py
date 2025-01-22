@@ -29,12 +29,18 @@ TUULET = ("ITÄ", "ETELÄ", "LÄNSI", "POHJOINEN")
 
 # Pistemääritelmät
 # Validit aloituspisteet
-VALIDIT_PISTESUMMAT = (
-    4*25_000,
+VALIDIT_PISTESUMMAT_10K = (
     4*25.0,
-    0,
-    4*30_000,
     4*30.0,
+)
+VALIDIT_PISTESUMMAT_100 = (
+    4*25_000,
+    4*30_000,
+)
+VALIDIT_PISTESUMMAT = (
+    *VALIDIT_PISTESUMMAT_10K,
+    0,
+    *VALIDIT_PISTESUMMAT_100,
 )
 # Oletus-uma (EMA 15/5)
 UMA_DEFAULT = (15_000, 5000, -5000, -15_000)
