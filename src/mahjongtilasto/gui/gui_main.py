@@ -455,6 +455,8 @@ def main():
     '''Käynnistää Paaikkunan.
     '''
     app = QtWidgets.QApplication([])
+    app.setApplicationName("Pisteidensyöttäjä")
+    app.setApplicationDisplayName("Pisteidensyöttäjä")
     Paaikkuna(
         pelaajalista=sorted(list(PELAAJAT))
         )
