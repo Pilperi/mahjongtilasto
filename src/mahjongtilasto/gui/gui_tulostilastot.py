@@ -37,7 +37,7 @@ class TulosTilastot(QtWidgets.QDialog):
         self.taulukko.horizontalHeader().setStyleSheet(STYLESHEET_TABLEHEADER)
         self.taulukko.setColumnCount(5)
         self.taulukko.setHorizontalHeaderLabels(["Nimi", "Pisteet", "Uma", "Yht.", "Pelejä"])
-        # self.taulukko.setSortingEnabled(True) # solut str, eli 0 > 100 > 20000 > 300
+        self.taulukko.setSortingEnabled(True)
 
         # Widgetit layouttiin
         self.layout.addWidget(self.valinta_aika)
@@ -111,11 +111,25 @@ class TulosTilastot(QtWidgets.QDialog):
         self.taulukko.setRowCount(len(self.pelaajastats))
 
         for row, pelaaja in enumerate(self.pelaajastats):
-            self.taulukko.setItem(row, 0, QtWidgets.QTableWidgetItem(pelaaja['nimi']))
-            self.taulukko.setItem(row, 1, QtWidgets.QTableWidgetItem(str(pelaaja['delta'])))
-            self.taulukko.setItem(row, 2, QtWidgets.QTableWidgetItem(str(pelaaja['uma_tot'])))
-            self.taulukko.setItem(row, 3, QtWidgets.QTableWidgetItem(str(pelaaja['delta'] + pelaaja['uma_tot'])))
-            self.taulukko.setItem(row, 4, QtWidgets.QTableWidgetItem(str(pelaaja['peleja'])))
+            self.taulukko.setItem(row, 0, QtWidgets.QTableWidgetItem(pelaaja['nimi']))  # Nimi perus string
+
+            # DisplayRole ja setData niin saa numerot oikein
+            delta = QtWidgets.QTableWidgetItem()
+            delta.setData(QtCore.Qt.DisplayRole, pelaaja['delta'])
+            self.taulukko.setItem(row, 1, delta)
+
+            uma_tot = QtWidgets.QTableWidgetItem()
+            uma_tot.setData(QtCore.Qt.DisplayRole, pelaaja['uma_tot'])
+            self.taulukko.setItem(row, 2, uma_tot)
+
+            delta_plus_uma = QtWidgets.QTableWidgetItem()
+            delta_plus_uma.setData(QtCore.Qt.DisplayRole, pelaaja['delta'] + pelaaja['uma_tot'])
+            self.taulukko.setItem(row, 3, delta_plus_uma)
+
+            peleja = QtWidgets.QTableWidgetItem()
+            peleja.setData(QtCore.Qt.DisplayRole, pelaaja['peleja'])
+            self.taulukko.setItem(row, 4, peleja)
+
         # Säädä ikkunan koko sopivaksi
         taulukon_leveys = self.taulukko.verticalHeader().width() + 4
         for colind in range(self.taulukko.columnCount()):
