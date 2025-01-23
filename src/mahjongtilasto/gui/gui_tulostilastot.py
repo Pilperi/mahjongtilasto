@@ -35,8 +35,8 @@ class TulosTilastot(QtWidgets.QDialog):
         self.taulukko = QtWidgets.QTableWidget(self)
         self.taulukko.verticalHeader().setStyleSheet(STYLESHEET_TABLEHEADER)
         self.taulukko.horizontalHeader().setStyleSheet(STYLESHEET_TABLEHEADER)
-        self.taulukko.setColumnCount(5)
-        self.taulukko.setHorizontalHeaderLabels(["Nimi", "Pisteet", "Uma", "Yht.", "Pelejä"])
+        self.taulukko.setColumnCount(6)
+        self.taulukko.setHorizontalHeaderLabels(["Nimi", "Pisteet", "Uma", "Yht.", "Pelejä", "Per peli"])
         self.taulukko.setSortingEnabled(True)
 
         # Widgetit layouttiin
@@ -122,13 +122,19 @@ class TulosTilastot(QtWidgets.QDialog):
             uma_tot.setData(QtCore.Qt.DisplayRole, pelaaja['uma_tot'])
             self.taulukko.setItem(row, 2, uma_tot)
 
+            pistesumma = pelaaja['delta'] + pelaaja['uma_tot']
             delta_plus_uma = QtWidgets.QTableWidgetItem()
-            delta_plus_uma.setData(QtCore.Qt.DisplayRole, pelaaja['delta'] + pelaaja['uma_tot'])
+            delta_plus_uma.setData(QtCore.Qt.DisplayRole, pistesumma)
             self.taulukko.setItem(row, 3, delta_plus_uma)
 
             peleja = QtWidgets.QTableWidgetItem()
             peleja.setData(QtCore.Qt.DisplayRole, pelaaja['peleja'])
             self.taulukko.setItem(row, 4, peleja)
+
+            keskimaarin = round(pistesumma/pelaaja['peleja']) if pelaaja['peleja'] else float('nan')
+            per_peli = QtWidgets.QTableWidgetItem()
+            per_peli.setData(QtCore.Qt.DisplayRole, keskimaarin)
+            self.taulukko.setItem(row, 5, per_peli)
 
         # Säädä ikkunan koko sopivaksi
         taulukon_leveys = self.taulukko.verticalHeader().width() + 4
