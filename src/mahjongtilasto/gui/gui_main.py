@@ -152,6 +152,15 @@ class Paaikkuna(QtWidgets.QMainWindow):
         self.grid.addWidget(self.pisteet_pohjoinen, 3,11,1,10)
         self.grid.addWidget(self.pistesumma, 4,11,1,10)
         self.grid.addWidget(self.nappi_tallenna, 5,11,1,10)
+        # Tab-järjestys kohdilleen: pudotusvalikko -> pistelaari
+        self.centralwidget.setTabOrder(self.pelaaja_ita, self.pisteet_ita)
+        self.centralwidget.setTabOrder(self.pisteet_ita, self.pelaaja_etela)
+        self.centralwidget.setTabOrder(self.pelaaja_etela, self.pisteet_etela)
+        self.centralwidget.setTabOrder(self.pisteet_etela, self.pelaaja_lansi)
+        self.centralwidget.setTabOrder(self.pelaaja_lansi, self.pisteet_lansi)
+        self.centralwidget.setTabOrder(self.pisteet_lansi, self.pelaaja_pohjoinen)
+        self.centralwidget.setTabOrder(self.pelaaja_pohjoinen, self.pisteet_pohjoinen)
+        self.centralwidget.setTabOrder(self.pisteet_pohjoinen, self.nappi_tallenna)
         # Menubar
         self._lisaa_menubar()
         self.show()
