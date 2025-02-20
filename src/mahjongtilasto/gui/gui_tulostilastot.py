@@ -38,7 +38,7 @@ class TulosTilastot(QtWidgets.QDialog):
         self.taulukko.setColumnCount(6)
         self.taulukko.setHorizontalHeaderLabels(["Nimi", "Pisteet", "Uma", "Yht.", "Pelejä", "Per peli"])
         self.taulukko.setSortingEnabled(True)
-
+        self.taulukko.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
         # Widgetit layouttiin
         self.layout.addWidget(self.valinta_aika)
         self.layout.addWidget(self.taulukko)
