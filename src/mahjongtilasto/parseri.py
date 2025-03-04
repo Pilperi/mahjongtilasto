@@ -104,7 +104,7 @@ def skaalaa_hanchanin_pisteet(pelaajatulokset: list):
     if pistesumma in VALIDIT_PISTESUMMAT_10K:
        LOGGER.debug("Skaalataan pisteet tuhannella")
        skaalatut_tulokset = [
-            (tulos[0], int(1000*tulos[1]))
+            (tulos[0], int(round(1000*tulos[1], 0)))
             for tulos in pelaajatulokset
         ]
     # 12300
@@ -119,7 +119,7 @@ def skaalaa_hanchanin_pisteet(pelaajatulokset: list):
         if any((matsaava_tulos := tulos[1])%100 for tulos in pelaajatulokset):
             LOGGER.debug("%s sisältää alle satasia, skaalataan tuhannella")
             skaalatut_tulokset = [
-                (tulos[0], int(1000*tulos[1]))
+                (tulos[0], int(round(1000*tulos[1], 0)))
                 for tulos in pelaajatulokset
             ]
         else:
@@ -326,10 +326,13 @@ def pelaajadelta(tiedostopolku: str, pelaaja: str, jalkeen_ajan=None):
                     if nimi == pelaaja:
                         aloituspisteet = sum(tls[1] for tls in tulos)/4
                         delta = piste - aloituspisteet
-                        tulokset["delta"] += int(delta)
+                        LOGGER.debug("Aloituspisteet %d, pisteet %d -> pistedelta %d", aloituspisteet, piste, delta)
+                        tulokset["delta"] += delta
                         tulokset["delta_vals"].append(delta)
                         tulokset["sijoitukset"].append(sijoitukset[pelipaikka])
                         tulokset["peleja"] += 1
+                        if tulokset["delta"]%100:
+                            LOGGER.error("Oudot deltat %d", delta)
                         break
                 else:
                     LOGGER.debug("%s ei pelannut pelissä %s", pelaaja, aikaleima)
