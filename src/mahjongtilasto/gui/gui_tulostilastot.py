@@ -71,19 +71,19 @@ class TulosTilastot(QtWidgets.QDialog):
         # Jos aikarajaus, katsotaan mikä aika nyt on
         nykyhetki = datetime.date.today()
         jalkeen_ajan = None if self.aikadelta is None else nykyhetki - self.aikadelta
+        ennen_aikaa = None # TODO
         # Lue pelaajakohtaiset tulokset
         LOGGER.debug("Lue pelaajakohtaiset tulokset")
-        for pelaajan_nimi in self.pelaajat:
+        kaikki_pelaajatulokset = parseri.pelaajadeltat(
+            self.tulostiedosto,
+            jalkeen_ajan=jalkeen_ajan,
+            ennen_aikaa=ennen_aikaa,
+            )
+        for pelaajan_nimi,pelaajan_tulokset in kaikki_pelaajatulokset.items():
             self.pelaajastats.append({
                 "nimi": pelaajan_nimi,
-                **parseri.pelaajadelta(
-                    self.tulostiedosto,
-                    pelaajan_nimi,
-                    jalkeen_ajan=jalkeen_ajan,
-                    )
+                **pelaajan_tulokset
                 })
-            LOGGER.debug("'%s' luettu, %d peliä",
-                pelaajan_nimi, self.pelaajastats[-1]["peleja"])
             # Lisää umat
             umasumma = 0
             for pelisijoitus in self.pelaajastats[-1]["sijoitukset"]:

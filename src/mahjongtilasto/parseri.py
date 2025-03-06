@@ -258,33 +258,31 @@ def laske_sijoitukset(pisteet: list):
         sijoitus += 1
     return sijoitukset
 
-def pelaajadelta(tiedostopolku: str, pelaaja: str, jalkeen_ajan=None):
-    '''Etsi tuloslistasta tietyn pelaajan pistedelta.
+def pelaajadeltat(tiedostopolku: str, jalkeen_ajan=None, ennen_aikaa=None):
+    '''Lue tulostiedostosta pelaajien pelimenestykset
 
     Parametrit
     ----------
     tiedostopolku : str
         Tiedosto jossa pelitulokset.
-    pelaaja : str
-        Pelaajan nimi.
+    jalkeen_ajan : datetime.date tai None, valinnainen
+        Aikaleima. Jos annettu, aikaleimaa vanhemmat pelit sivuutetaan.
+    ennen_aikaa : datetime.date tai None, valinnainen
+        Aikaleima. Jos annettu, aikaleimaa uudemmat pelit sivuutetaan.
 
     Palauttaa
     ---------
     dict
-        Pelaajan pistetilastot:
+        Pelaajakohtaiset pistetilastot:
             - Pistesumma
             - Pelikohtaiset pistedeltat
             - Pelikohtaiset sijoitukset
+        kullekin pelaajalle.
     '''
     if not os.path.isfile(tiedostopolku):
         LOGGER.error("Tiedostopolku '%s' ei ole validi!")
         raise ValueError(f"Tiedostopolku {tiedostopolku:s} ei ole validi!")
-    tulokset = {
-        "delta": 0,
-        "delta_vals": [],
-        "sijoitukset": [],
-        "peleja": 0,
-    }
+    tulokset = {}
     with open(tiedostopolku, "r", encoding="utf-8") as fopen:
         rivi = fopen.readline()
         # EOF asti
@@ -307,12 +305,18 @@ def pelaajadelta(tiedostopolku: str, pelaaja: str, jalkeen_ajan=None):
                 if pelin_aika >= jalkeen_ajan:
                     LOGGER.debug("'%s' on jälkeen '%s'",
                         aikaleima, jalkeen_ajan.strftime("%Y-%m-%d"))
-                    mukaan_tuloksiin = True
+                    # ja tarpeeksi vanha
+                    if isinstance(ennen_aikaa, datetime.date) and pelin_aika > ennen_aikaa:
+                        LOGGER.debug("Mutta myös ennen '%s', skip",
+                            ennen_aikaa.strftime("%Y-%m-%d"))
+                    else:
+                        LOGGER.debug("Ja jälkeen '%s', ok",
+                            ennen_aikaa.strftime("%Y-%m-%d"))
+                        mukaan_tuloksiin = True
                 else:
                     LOGGER.debug("'%s' on ennen '%s', skip",
                         aikaleima, jalkeen_ajan.strftime("%Y-%m-%d"))
                     mukaan_tuloksiin = False
-            # Vain jos aikaleima täsmää
             if mukaan_tuloksiin:
                 LOGGER.debug("Lue tulos %s", aikaleima)
                 tulos = [None for i in TUULET]
@@ -323,18 +327,23 @@ def pelaajadelta(tiedostopolku: str, pelaaja: str, jalkeen_ajan=None):
                 tulos = skaalaa_hanchanin_pisteet(tulos)
                 sijoitukset = laske_sijoitukset([t[1] for t in tulos])
                 for pelipaikka, (nimi, piste) in enumerate(tulos):
-                    if nimi == pelaaja:
-                        aloituspisteet = sum(tls[1] for tls in tulos)/4
-                        delta = piste - aloituspisteet
-                        LOGGER.debug("Aloituspisteet %d, pisteet %d -> pistedelta %d", aloituspisteet, piste, delta)
-                        tulokset["delta"] += delta
-                        tulokset["delta_vals"].append(delta)
-                        tulokset["sijoitukset"].append(sijoitukset[pelipaikka])
-                        tulokset["peleja"] += 1
-                        if tulokset["delta"]%100:
-                            LOGGER.error("Oudot deltat %d", delta)
-                        break
-                else:
-                    LOGGER.debug("%s ei pelannut pelissä %s", pelaaja, aikaleima)
+                    # Uusi pelaaja tilastoissa
+                    if nimi not in tulokset:
+                        tulokset[nimi] = {
+                            "delta": 0,
+                            "delta_vals": [],
+                            "sijoitukset": [],
+                            "peleja": 0,
+                            }
+                    aloituspisteet = sum(tls[1] for tls in tulos)/4
+                    delta = piste - aloituspisteet
+                    LOGGER.debug("Aloituspisteet %d, %s pisteet %d -> pistedelta %d",
+                        aloituspisteet, nimi, piste, delta)
+                    tulokset[nimi] ["delta"] += delta
+                    tulokset[nimi] ["delta_vals"].append(delta)
+                    tulokset[nimi] ["sijoitukset"].append(sijoitukset[pelipaikka])
+                    tulokset[nimi] ["peleja"] += 1
+                    if tulokset[nimi] ["delta"]%100:
+                        LOGGER.error("Oudot deltat %d", delta)
             rivi = fopen.readline()
     return tulokset
