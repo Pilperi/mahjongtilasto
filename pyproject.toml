@@ -14,7 +14,7 @@ maintainers = [
   {name = "Pilperi"}
 ]
 requires-python = ">=3.8"
-dependencies = ["PyQt5"]
+dependencies = ["PyQt5", "pytest"]
 
 
 [project.scripts]
