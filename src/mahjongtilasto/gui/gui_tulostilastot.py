@@ -9,6 +9,7 @@ from PyQt5 import QtCore,QtWidgets
 from mahjongtilasto import UMA_DEFAULT, AIKADELTAT
 from mahjongtilasto import parseri
 from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_TABLEHEADER
+from mahjongtilasto.aikaikkuna import AikaIkkuna, KvartaaliIkkuna
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class TulosTilastot(QtWidgets.QDialog):
         self.layout = QtWidgets.QVBoxLayout(self)
 
         # Valinta aikaikkunalle (mitkä pelit otetaan mukaan)
+        self.aikaikkuna = AikaIkkuna()
         self.aikadelta = None # kaikki
         self.valinta_aika = QtWidgets.QComboBox(self)
         self.valinta_aika.addItems(["Kaikki", "6 kk", "3 kk", "1 kk"])
@@ -70,14 +72,12 @@ class TulosTilastot(QtWidgets.QDialog):
                         self.pelaajat.append(tuulen_tulos[0])
         # Jos aikarajaus, katsotaan mikä aika nyt on
         nykyhetki = datetime.date.today()
-        jalkeen_ajan = None if self.aikadelta is None else nykyhetki - self.aikadelta
-        ennen_aikaa = None # TODO
+        self.aikaikkuna.alkupaiva = None if self.aikadelta is None else nykyhetki - self.aikadelta
         # Lue pelaajakohtaiset tulokset
         LOGGER.debug("Lue pelaajakohtaiset tulokset")
         kaikki_pelaajatulokset = parseri.pelaajadeltat(
             self.tulostiedosto,
-            jalkeen_ajan=jalkeen_ajan,
-            ennen_aikaa=ennen_aikaa,
+            self.aikaikkuna
             )
         for pelaajan_nimi,pelaajan_tulokset in kaikki_pelaajatulokset.items():
             self.pelaajastats.append({

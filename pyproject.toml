@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mahjongtilasto"
-version = "2025.03.06.0"
+dynamic = ["version"]
 description = "Yksinkertainen pistetilastojen hallinnointikirjasto"
 readme = "README.md"
 authors = [
@@ -16,6 +16,8 @@ maintainers = [
 requires-python = ">=3.8"
 dependencies = ["PyQt5", "pytest"]
 
+[tool.setuptools.dynamic]
+version = {file=["src/mahjongtilasto/VERSION"]}
 
 [project.scripts]
 mahjongtilasto = "mahjongtilasto.main:main"

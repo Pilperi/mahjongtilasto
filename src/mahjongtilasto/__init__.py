@@ -5,7 +5,11 @@ Yksinkertainen kirjasto mahjong-pelitulosten hallinnointiin.
 import os
 import datetime
 
-__version__ = "2024.12.27.0"
+__version__ = "0.0.0.0"
+VERSION_FILE = os.path.join(os.path.dirname(__file__), "VERSION")
+if os.path.isfile(VERSION_FILE):
+    with open(VERSION_FILE, "r", encoding="utf-8") as fopen:
+        __version__ = fopen.readline().rstrip()
 
 KOTIKANSIO = os.path.expanduser("~")
 KANSIO_CFG = os.path.join(KOTIKANSIO, ".config", "mahjongtilasto")

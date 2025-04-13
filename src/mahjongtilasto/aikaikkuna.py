@@ -174,7 +174,7 @@ class KvartaaliIkkuna(AikaIkkuna):
         self.kvartaali = (
             kvartaali
             if isinstance(kvartaali, int)
-            else 1+(datetime.date.today().month//3)
+            else KvartaaliIkkuna.kvartaalinumero()
             )
         # Minkä vuoden kvartaali, oletuksena nykyvuosi
         if len(args) > 1:
@@ -252,3 +252,23 @@ class KvartaaliIkkuna(AikaIkkuna):
             - datetime.timedelta(days=1)
         )
         return paivays
+
+    @staticmethod
+    def kvartaalinumero(kuukausi=None):
+        '''Kerro päiväyksen kvartaalinumero.
+
+        Ilman parametreja kertoo nykykvartaalin.
+
+        Parametrit
+        ----------
+        kuukausi : int tai None
+            Päiväyksen kuukausi (1-12)
+
+        Palauttaa
+        ---------
+        int
+            Kvartaalinumero, 1-4 väliltä.
+        '''
+        if not isinstance(kuukausi, int):
+            kuukausi = datetime.date.today().month
+        return 1 + ((kuukausi-1)//3)

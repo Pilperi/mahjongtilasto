@@ -4,8 +4,10 @@ import os
 import datetime
 import logging
 from mahjongtilasto import TUULET, VALIDIT_PISTESUMMAT_10K, VALIDIT_PISTESUMMAT_100
+from mahjongtilasto.aikaikkuna import AikaIkkuna
 
 LOGGER = logging.getLogger(__name__)
+
 
 def parse_id(rivi: str):
     '''ID-rivin parseri.
@@ -82,6 +84,7 @@ def parse_pelaajatulos(rivi: str):
         raise ValueError from err
     return pelaajanimi, pistetulos
 
+
 def skaalaa_hanchanin_pisteet(pelaajatulokset: list):
     '''Tee tarvittavat skaalailut pelaajien tuloksiin.
 
@@ -117,7 +120,7 @@ def skaalaa_hanchanin_pisteet(pelaajatulokset: list):
     elif pistesumma == 0.0:
         LOGGER.debug("Nollasumma, katsotaan kummalla formaatilla")
         if any((matsaava_tulos := tulos[1])%100 for tulos in pelaajatulokset):
-            LOGGER.debug("%s sisältää alle satasia, skaalataan tuhannella")
+            LOGGER.debug("%s sisältää alle satasia, skaalataan tuhannella", matsaava_tulos)
             skaalatut_tulokset = [
                 (tulos[0], int(round(1000*tulos[1], 0)))
                 for tulos in pelaajatulokset
@@ -225,6 +228,7 @@ def lisaa_tulos_txt(pelitulos: list, tiedostopolku: str, aikaleima=None):
         fopen.write("\n")
     LOGGER.debug("Kirjoitettu")
 
+
 def laske_sijoitukset(pisteet: list):
     '''Laske pistesijoitusten sijoitukset.
 
@@ -258,17 +262,16 @@ def laske_sijoitukset(pisteet: list):
         sijoitus += 1
     return sijoitukset
 
-def pelaajadeltat(tiedostopolku: str, jalkeen_ajan=None, ennen_aikaa=None):
+
+def pelaajadeltat(tiedostopolku: str, aikaikkuna: AikaIkkuna):
     '''Lue tulostiedostosta pelaajien pelimenestykset
 
     Parametrit
     ----------
     tiedostopolku : str
         Tiedosto jossa pelitulokset.
-    jalkeen_ajan : datetime.date tai None, valinnainen
-        Aikaleima. Jos annettu, aikaleimaa vanhemmat pelit sivuutetaan.
-    ennen_aikaa : datetime.date tai None, valinnainen
-        Aikaleima. Jos annettu, aikaleimaa uudemmat pelit sivuutetaan.
+    aikaikkuna : AikaIkkuna
+        Aikaikkuna jonka puitteissa pelien tulee olla.
 
     Palauttaa
     ---------
@@ -284,66 +287,52 @@ def pelaajadeltat(tiedostopolku: str, jalkeen_ajan=None, ennen_aikaa=None):
         raise ValueError(f"Tiedostopolku {tiedostopolku:s} ei ole validi!")
     tulokset = {}
     with open(tiedostopolku, "r", encoding="utf-8") as fopen:
-        rivi = fopen.readline()
         # EOF asti
-        while rivi:
+        while rivi := fopen.readline():
             rivi = rivi.rstrip()
             # ID: lue yksittäinen pelitulos
             aikaleima = parse_id(rivi)
             if aikaleima is None:
-                rivi = fopen.readline()
                 continue
-            # Kerta oli validi ID, katsotaan onko tarpeeksi tuore peli
-            mukaan_tuloksiin = True
-            if isinstance(jalkeen_ajan, datetime.date):
-                splitattu_aika = aikaleima.split("-")
-                pelin_aika = datetime.date(
-                    year=int(splitattu_aika[0]),
-                    month=int(splitattu_aika[1]),
-                    day=int(splitattu_aika[2]),
-                    )
-                if pelin_aika >= jalkeen_ajan:
-                    LOGGER.debug("'%s' on jälkeen '%s'",
-                        aikaleima, jalkeen_ajan.strftime("%Y-%m-%d"))
-                    # ja tarpeeksi vanha
-                    if isinstance(ennen_aikaa, datetime.date) and pelin_aika > ennen_aikaa:
-                        LOGGER.debug("Mutta myös ennen '%s', skip",
-                            ennen_aikaa.strftime("%Y-%m-%d"))
-                    else:
-                        LOGGER.debug("Ja jälkeen '%s', ok",
-                            ennen_aikaa.strftime("%Y-%m-%d"))
-                        mukaan_tuloksiin = True
-                else:
-                    LOGGER.debug("'%s' on ennen '%s', skip",
-                        aikaleima, jalkeen_ajan.strftime("%Y-%m-%d"))
-                    mukaan_tuloksiin = False
-            if mukaan_tuloksiin:
-                LOGGER.debug("Lue tulos %s", aikaleima)
-                tulos = [None for i in TUULET]
-                for tuuli_index, tuuli in enumerate(TUULET):
-                    rivi = fopen.readline().rstrip()
-                    tulos[tuuli_index] = parse_pelaajatulos(rivi)
-                    LOGGER.debug("%s tulos %s", tuuli, tulos[tuuli_index])
-                tulos = skaalaa_hanchanin_pisteet(tulos)
-                sijoitukset = laske_sijoitukset([t[1] for t in tulos])
-                for pelipaikka, (nimi, piste) in enumerate(tulos):
-                    # Uusi pelaaja tilastoissa
-                    if nimi not in tulokset:
-                        tulokset[nimi] = {
-                            "delta": 0,
-                            "delta_vals": [],
-                            "sijoitukset": [],
-                            "peleja": 0,
-                            }
-                    aloituspisteet = sum(tls[1] for tls in tulos)/4
-                    delta = piste - aloituspisteet
-                    LOGGER.debug("Aloituspisteet %d, %s pisteet %d -> pistedelta %d",
-                        aloituspisteet, nimi, piste, delta)
-                    tulokset[nimi] ["delta"] += delta
-                    tulokset[nimi] ["delta_vals"].append(delta)
-                    tulokset[nimi] ["sijoitukset"].append(sijoitukset[pelipaikka])
-                    tulokset[nimi] ["peleja"] += 1
-                    if tulokset[nimi] ["delta"]%100:
-                        LOGGER.error("Oudot deltat %d", delta)
-            rivi = fopen.readline()
+            # Kerta oli validi ID, katsotaan onko pelin aikaleima annetuissa rajoissa
+            splitattu_aika = aikaleima.split("-")
+            pelin_aika = datetime.date(
+                year=int(splitattu_aika[0]),
+                month=int(splitattu_aika[1]),
+                day=int(splitattu_aika[2]),
+                )
+            if aikaikkuna.paivays_rajoissa(pelin_aika):
+                LOGGER.debug("'%s' on rajoissa '%s'",
+                    aikaleima, aikaikkuna)
+            else:
+                LOGGER.debug("'%s' ei ole rajoissa '%s', skip",
+                    aikaleima, aikaikkuna)
+                continue
+            LOGGER.debug("Lue tulos %s", aikaleima)
+            tulos = [None for i in TUULET]
+            for tuuli_index, tuuli in enumerate(TUULET):
+                rivi = fopen.readline().rstrip()
+                tulos[tuuli_index] = parse_pelaajatulos(rivi)
+                LOGGER.debug("%s tulos %s", tuuli, tulos[tuuli_index])
+            tulos = skaalaa_hanchanin_pisteet(tulos)
+            sijoitukset = laske_sijoitukset([t[1] for t in tulos])
+            for pelipaikka, (nimi, piste) in enumerate(tulos):
+                # Uusi pelaaja tilastoissa
+                if nimi not in tulokset:
+                    tulokset[nimi] = {
+                        "delta": 0,
+                        "delta_vals": [],
+                        "sijoitukset": [],
+                        "peleja": 0,
+                        }
+                aloituspisteet = sum(tls[1] for tls in tulos)/4
+                delta = piste - aloituspisteet
+                LOGGER.debug("Aloituspisteet %d, %s pisteet %d -> pistedelta %d",
+                    aloituspisteet, nimi, piste, delta)
+                tulokset[nimi] ["delta"] += delta
+                tulokset[nimi] ["delta_vals"].append(delta)
+                tulokset[nimi] ["sijoitukset"].append(sijoitukset[pelipaikka])
+                tulokset[nimi] ["peleja"] += 1
+                if tulokset[nimi] ["delta"]%100:
+                    LOGGER.error("Oudot deltat %d", delta)
     return tulokset
