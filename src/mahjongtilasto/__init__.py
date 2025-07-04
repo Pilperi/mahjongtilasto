@@ -3,9 +3,10 @@
 Yksinkertainen kirjasto mahjong-pelitulosten hallinnointiin.
 '''
 import os
+import time
 import datetime
 
-__version__ = "2024.12.27.0"
+__version__ = "2025.07.04.1"
 
 KOTIKANSIO = os.path.expanduser("~")
 KANSIO_CFG = os.path.join(KOTIKANSIO, ".config", "mahjongtilasto")
@@ -24,6 +25,8 @@ with open(PELAAJATIEDOSTO, "r", encoding="UTF-8") as fopen:
         rivi = rivi.rstrip()
         if not rivi.startswith("#") and len(rivi) > 0:
             PELAAJAT.add(rivi)
+# Tulostiedoston oletusarvo
+OLETUS_TULOSTIEDOSTO = os.path.join(KOTIKANSIO, time.strftime("pelit_%Y.txt"))
 
 TUULET = ("ITÄ", "ETELÄ", "LÄNSI", "POHJOINEN")
 
