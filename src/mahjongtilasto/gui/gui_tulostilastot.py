@@ -108,6 +108,7 @@ class TulosTilastot(QtWidgets.QDialog):
         '''Täytä pelaajatilastot taulukkoon.
         '''
         self.tayta_pelaajastats()
+        self.taulukko.setSortingEnabled(False)
         self.taulukko.setRowCount(len(self.pelaajastats))
 
         for row, pelaaja in enumerate(self.pelaajastats):
@@ -136,6 +137,7 @@ class TulosTilastot(QtWidgets.QDialog):
             per_peli.setData(QtCore.Qt.DisplayRole, keskimaarin)
             self.taulukko.setItem(row, 5, per_peli)
 
+        self.taulukko.setSortingEnabled(True)
         # Säädä ikkunan koko sopivaksi
         taulukon_leveys = self.taulukko.verticalHeader().width() + 4
         for colind in range(self.taulukko.columnCount()):
