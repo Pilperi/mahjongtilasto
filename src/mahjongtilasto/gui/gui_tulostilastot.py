@@ -24,6 +24,7 @@ class TulosTilastot(QtWidgets.QDialog):
 
         self.centralwidget = QtWidgets.QWidget(self)
         self.layout = QtWidgets.QVBoxLayout(self)
+        self.margins = self.layout.contentsMargins()
 
         # Valinta aikaikkunalle (mitkä pelit otetaan mukaan)
         self.aikadelta = None # kaikki
@@ -108,6 +109,7 @@ class TulosTilastot(QtWidgets.QDialog):
         '''Täytä pelaajatilastot taulukkoon.
         '''
         self.tayta_pelaajastats()
+        self.taulukko.setSortingEnabled(False)
         self.taulukko.setRowCount(len(self.pelaajastats))
 
         for row, pelaaja in enumerate(self.pelaajastats):
@@ -136,15 +138,22 @@ class TulosTilastot(QtWidgets.QDialog):
             per_peli.setData(QtCore.Qt.DisplayRole, keskimaarin)
             self.taulukko.setItem(row, 5, per_peli)
 
-        # Säädä ikkunan koko sopivaksi
-        taulukon_leveys = self.taulukko.verticalHeader().width() + 4
+        self.taulukko.setSortingEnabled(True)
+        self.saada_koko()
+
+    def saada_koko(self):
+        '''Säädä ikkunan koko sopivaksi
+        '''
+        taulukon_leveys = self.taulukko.verticalHeader().width() + 4 + self.margins.left() + self.margins.right()
         for colind in range(self.taulukko.columnCount()):
             taulukon_leveys += self.taulukko.columnWidth(colind)
         LOGGER.debug("Taulukon leveys %s", taulukon_leveys)
-        taulukon_korkeus = self.taulukko.horizontalHeader().height() + 24
+
+        taulukon_korkeus = self.taulukko.horizontalHeader().height() + 24 + self.margins.top() + self.margins.bottom()
         for rowind in range(self.taulukko.rowCount()):
             taulukon_korkeus += self.taulukko.rowHeight(rowind)
         LOGGER.debug("Taulukon korkeus %s", taulukon_korkeus)
+
         self.resize(min(800, taulukon_leveys), min(800, taulukon_korkeus))
 
     def vaihda_aikaikkunaa(self):

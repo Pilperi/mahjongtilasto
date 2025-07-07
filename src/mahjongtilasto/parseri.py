@@ -310,8 +310,10 @@ def pelaajadeltat(tiedostopolku: str, jalkeen_ajan=None, ennen_aikaa=None):
                         LOGGER.debug("Mutta myös ennen '%s', skip",
                             ennen_aikaa.strftime("%Y-%m-%d"))
                     else:
-                        LOGGER.debug("Ja jälkeen '%s', ok",
-                            ennen_aikaa.strftime("%Y-%m-%d"))
+                        # debugit kaatais ohjelman jos ennen_aikaa on None...
+                        if isinstance(ennen_aikaa, datetime.date):
+                            LOGGER.debug("Ja jälkeen '%s', ok",
+                                ennen_aikaa.strftime("%Y-%m-%d"))
                         mukaan_tuloksiin = True
                 else:
                     LOGGER.debug("'%s' on ennen '%s', skip",
