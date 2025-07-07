@@ -1,6 +1,5 @@
 '''Pelitulosten parserifunktiot.'''
 import os
-# import time
 import datetime
 import logging
 from mahjongtilasto import TUULET, VALIDIT_PISTESUMMAT_10K, VALIDIT_PISTESUMMAT_100

@@ -6,7 +6,19 @@ import os
 import time
 import datetime
 
-__version__ = "2025.07.04.1"
+# Koeta lukea versio versiotiedostosta.
+# Jos sellaista ei ole, tehdään.
+VERSIOFILU = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)),
+    "VERSION"
+)
+__version__ = datetime.datetime.now().strftime("%Y.%m.%d.0")
+if os.path.isfile(VERSIOFILU):
+    with open(VERSIOFILU, "r") as fopen:
+        __version__ = fopen.readline().rstrip()
+else:
+    with open(VERSIOFILU, "w+") as fopen:
+        fopen.write(__version__)
 
 KOTIKANSIO = os.path.expanduser("~")
 KANSIO_CFG = os.path.join(KOTIKANSIO, ".config", "mahjongtilasto")
