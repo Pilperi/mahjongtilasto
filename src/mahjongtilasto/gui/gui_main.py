@@ -9,6 +9,7 @@ from mahjongtilasto import KOTIKANSIO, TUULET, VALIDIT_PISTESUMMAT
 from mahjongtilasto import parseri
 from mahjongtilasto import PELAAJAT, PELAAJATIEDOSTO, OLETUS_TULOSTIEDOSTO
 from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_ERROR, STYLESHEET_OK, STYLESHEET_NA, STYLESHEET_TOOLTIP
+from mahjongtilasto.gui import PELAAJALISTA_PITUUS
 from mahjongtilasto.gui import gui_tulostilastot
 
 LOGGER = logging.getLogger(__name__)
@@ -90,6 +91,11 @@ class Paaikkuna(QtWidgets.QMainWindow):
         self.pelaaja_lansi = self.pelaajavalikot[2]
         self.pelaaja_pohjoinen = self.pelaajavalikot[3]
         self.tayta_pelaajanimet()
+        # Rajoita montako nimeä näytetään kerralla
+        self.pelaaja_ita.setMaxVisibleItems(PELAAJALISTA_PITUUS)
+        self.pelaaja_etela.setMaxVisibleItems(PELAAJALISTA_PITUUS)
+        self.pelaaja_lansi.setMaxVisibleItems(PELAAJALISTA_PITUUS)
+        self.pelaaja_pohjoinen.setMaxVisibleItems(PELAAJALISTA_PITUUS)
         # Signaalit pelaajanimiin
         self.pelaaja_ita.currentIndexChanged.connect(
             lambda t: self.vaihda_pelaajaa(self.pelaaja_ita))

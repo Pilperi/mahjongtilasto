@@ -4,6 +4,9 @@
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+# Montako pelaajanimeä näytetään pudotusvalikossa
+PELAAJALISTA_PITUUS = 11
+
 STYLESHEET_NORMAL = "background-color: #31363b; color: white;"
 STYLESHEET_ERROR = "background-color: #ff6a9a; color: black;"
 STYLESHEET_OK = "background-color: #caecb0; color: black;"
