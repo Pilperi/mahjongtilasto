@@ -8,7 +8,7 @@ from PyQt5 import QtCore,QtWidgets,QtGui
 from mahjongtilasto import KOTIKANSIO, TUULET, VALIDIT_PISTESUMMAT
 from mahjongtilasto import parseri
 from mahjongtilasto import PELAAJAT, PELAAJATIEDOSTO, OLETUS_TULOSTIEDOSTO
-from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_ERROR, STYLESHEET_OK, STYLESHEET_NA, STYLESHEET_TOOLTIP
+from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_ERROR, STYLESHEET_OK, STYLESHEET_NA, STYLESHEET_TOOLTIP, STYLESHEET_COMBO
 from mahjongtilasto.gui import PELAAJALISTA_PITUUS
 from mahjongtilasto.gui import gui_tulostilastot
 
