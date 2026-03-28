@@ -5,12 +5,13 @@ import os
 import time
 import logging
 from PyQt5 import QtCore,QtWidgets,QtGui
-from mahjongtilasto import KOTIKANSIO, TUULET, VALIDIT_PISTESUMMAT
+from mahjongtilasto import TUULET, VALIDIT_PISTESUMMAT, LANG
 from mahjongtilasto import parseri
 from mahjongtilasto import PELAAJAT, PELAAJATIEDOSTO, OLETUS_TULOSTIEDOSTO
-from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_ERROR, STYLESHEET_OK, STYLESHEET_NA, STYLESHEET_TOOLTIP, STYLESHEET_COMBO
+from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_ERROR, STYLESHEET_OK, STYLESHEET_NA, STYLESHEET_TOOLTIP
 from mahjongtilasto.gui import PELAAJALISTA_PITUUS
 from mahjongtilasto.gui import gui_tulostilastot
+from mahjongtilasto.gui.translations import TRANSLATIONS
 
 LOGGER = logging.getLogger(__name__)
 
@@ -19,15 +20,16 @@ class UusiPelaaja(QtWidgets.QDialog):
     '''Ikkuna uuden pelaajan nickin syöttämiseen, rajoitetulla merkistöllä.
     '''
     nick_validator = QtGui.QRegExpValidator(
-        QtCore.QRegExp("([A-Öa-ö0-9!,.\-;:_*/]*[ ]?[A-Öa-ö0-9!,.\-;:_*/]*)*"))
+        QtCore.QRegExp(r"([A-Öa-ö0-9!,.\-;:_*/]*[ ]?[A-Öa-ö0-9!,.\-;:_*/]*)*"))
+    UI_TEXT = TRANSLATIONS["UusiPelaaja"]
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setWindowTitle("Lisää uusi pelaaja")
+        self.setWindowTitle(UusiPelaaja.UI_TEXT[LANG]["title"])
         self.setStyleSheet(STYLESHEET_NORMAL)
         self.centralwidget = QtWidgets.QWidget(self)
         self.layout = QtWidgets.QVBoxLayout()
         self.centralwidget.setLayout(self.layout)
-        self.layout.addWidget(QtWidgets.QLabel("Pelaajan nimi"))
+        self.layout.addWidget(QtWidgets.QLabel(UusiPelaaja.UI_TEXT[LANG]["player_name"]))
         self.nimikentta = QtWidgets.QLineEdit(alignment=QtCore.Qt.AlignRight)
         self.nimikentta.setMaxLength(32)
         self.layout.addWidget(self.nimikentta)
@@ -46,12 +48,13 @@ class UusiPelaaja(QtWidgets.QDialog):
 
 
 class Paaikkuna(QtWidgets.QMainWindow):
+    UI_TEXT = TRANSLATIONS["Paaikkuna"]
     def __init__(self, pelaajalista=None):
         super().__init__()
         self.tulostiedosto = None
         self.centralwidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralwidget)
-        self.setWindowTitle("Pisteidensyöttäjä")
+        self.setWindowTitle(Paaikkuna.UI_TEXT[LANG]["title"])
         self.grid = QtWidgets.QGridLayout()
         self.centralwidget.setLayout(self.grid)
         self.grid.setSpacing(5)
@@ -62,7 +65,7 @@ class Paaikkuna(QtWidgets.QMainWindow):
         # Tallennus
         self.nappi_tallenna = QtWidgets.QPushButton()
         # self.nappi_tallenna.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.nappi_tallenna.setText("Tallenna")
+        self.nappi_tallenna.setText(Paaikkuna.UI_TEXT[LANG]["save"])
         self.nappi_tallenna.clicked.connect(self.tallenna_tulos)
         self.nappi_tallenna.setEnabled(False)
         # Kenttien nimet
@@ -174,8 +177,10 @@ class Paaikkuna(QtWidgets.QMainWindow):
     def _lisaa_menubar(self):
         '''Lisää ikkunaan menubar'''
         menu = QtWidgets.QMenuBar(self)
-        stats_menu = QtWidgets.QMenu("&Stats", self)
-        self.action_nayta_pisteet = QtWidgets.QAction("Pistesumma", self)
+        stats_menu = QtWidgets.QMenu(
+            f"&{Paaikkuna.UI_TEXT[LANG]['statistics']}", self)
+        self.action_nayta_pisteet = QtWidgets.QAction(
+            Paaikkuna.UI_TEXT[LANG]['statistics.pointsum'], self)
         self.action_nayta_pisteet.triggered.connect(self.nayta_pistesummat)
         stats_menu.addAction(self.action_nayta_pisteet)
         menu.addMenu(stats_menu)
@@ -220,13 +225,17 @@ class Paaikkuna(QtWidgets.QMainWindow):
         self.pelaajavaihtoehdot[:-1] = sorted(self.pelaajavaihtoehdot[:-1], key=lambda t: t.lower())
         LOGGER.debug("Pelaajavaihtoehdot sortattuna: %s", self.pelaajavaihtoehdot)
         # aseta pudotusvalikoihin
-        self.pelaaja_ita.addItems(["Pelaaja itä"])
+        self.pelaaja_ita.addItems(
+            [Paaikkuna.UI_TEXT[LANG]["player_east"]])
         self.pelaaja_ita.addItems([nimi for nimi in self.pelaajavaihtoehdot])
-        self.pelaaja_etela.addItems(["Pelaaja etelä"])
+        self.pelaaja_etela.addItems(
+            [Paaikkuna.UI_TEXT[LANG]["player_south"]])
         self.pelaaja_etela.addItems([nimi for nimi in self.pelaajavaihtoehdot])
-        self.pelaaja_lansi.addItems(["Pelaaja länsi"])
+        self.pelaaja_lansi.addItems(
+            [Paaikkuna.UI_TEXT[LANG]["player_west"]])
         self.pelaaja_lansi.addItems([nimi for nimi in self.pelaajavaihtoehdot])
-        self.pelaaja_pohjoinen.addItems(["Pelaaja pohjoinen"])
+        self.pelaaja_pohjoinen.addItems(
+            [Paaikkuna.UI_TEXT[LANG]["player_north"]])
         self.pelaaja_pohjoinen.addItems([nimi for nimi in self.pelaajavaihtoehdot])
         # Värit kohdilleen
         self.pelaaja_ita.setStyleSheet(STYLESHEET_NORMAL)
@@ -396,9 +405,9 @@ class Paaikkuna(QtWidgets.QMainWindow):
         oletuspolku = OLETUS_TULOSTIEDOSTO
         tiedostopolku, ok_cancel = QtWidgets.QFileDialog.getSaveFileName(
             self.centralwidget,
-            "Valitse tulostiedosto",
+            Paaikkuna.UI_TEXT[LANG]["select_result_file"],
             oletuspolku,
-            "Tekstitiedostot (*.txt)",
+            Paaikkuna.UI_TEXT[LANG]["file_types"],
             options=QtWidgets.QFileDialog.DontConfirmOverwrite,
         )
         if ok_cancel:
@@ -418,9 +427,9 @@ class Paaikkuna(QtWidgets.QMainWindow):
         oletuspolku = OLETUS_TULOSTIEDOSTO
         tiedostopolku, ok_cancel = QtWidgets.QFileDialog.getOpenFileName(
             self.centralwidget,
-            "Valitse tulostiedosto",
+            Paaikkuna.UI_TEXT[LANG]["select_result_file"],
             oletuspolku,
-            "Tekstitiedostot (*.txt)",
+            Paaikkuna.UI_TEXT[LANG]["file_types"],
             options=QtWidgets.QFileDialog.DontConfirmOverwrite,
         )
         if ok_cancel:
@@ -451,7 +460,7 @@ class Paaikkuna(QtWidgets.QMainWindow):
             aikaleima=aikaleima,
             )
         infobox = QtWidgets.QMessageBox(self.centralwidget)
-        infobox.setWindowTitle("Tallennettu")
+        infobox.setWindowTitle(Paaikkuna.UI_TEXT[LANG]["saved"])
         infobox.setText(f"{self.tulostiedosto}\n{aikaleima}")
         infobox.exec()
         self.reset()
@@ -470,8 +479,8 @@ def main():
     '''Käynnistää Paaikkunan.
     '''
     app = QtWidgets.QApplication([])
-    app.setApplicationName("Pisteidensyöttäjä")
-    app.setApplicationDisplayName("Pisteidensyöttäjä")
+    app.setApplicationName(TRANSLATIONS["Application"][LANG]["application_name"])
+    app.setApplicationDisplayName(TRANSLATIONS["Application"][LANG]["application_name"])
     Paaikkuna(
         pelaajalista=sorted(list(PELAAJAT))
         )

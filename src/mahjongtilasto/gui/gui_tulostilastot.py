@@ -6,9 +6,10 @@ import os
 import datetime
 import logging
 from PyQt5 import QtCore,QtWidgets
-from mahjongtilasto import UMA_DEFAULT, AIKADELTAT
+from mahjongtilasto import UMA_DEFAULT, AIKADELTAT, LANG
 from mahjongtilasto import parseri
 from mahjongtilasto.gui import STYLESHEET_NORMAL, STYLESHEET_TABLEHEADER
+from mahjongtilasto.gui.translations import TRANSLATIONS
 
 LOGGER = logging.getLogger(__name__)
 
@@ -16,9 +17,10 @@ LOGGER = logging.getLogger(__name__)
 class TulosTilastot(QtWidgets.QDialog):
     '''Ikkuna kaikkien pelaajien tilastojen katseluun.
     '''
+    UI_TEXT = TRANSLATIONS["TulosTilastot"]
     def __init__(self, tulostiedosto, pelaajat=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setWindowTitle("Pelistatistiikat")
+        self.setWindowTitle(TulosTilastot.UI_TEXT[LANG]["title"])
         self.setStyleSheet(STYLESHEET_NORMAL)
         # self.resize(800, 400)  # Pikkusen isompi alkuikkuna
 
@@ -29,7 +31,8 @@ class TulosTilastot(QtWidgets.QDialog):
         # Valinta aikaikkunalle (mitkä pelit otetaan mukaan)
         self.aikadelta = None # kaikki
         self.valinta_aika = QtWidgets.QComboBox(self)
-        self.valinta_aika.addItems(["Kaikki", "6 kk", "3 kk", "1 kk"])
+        self.valinta_aika.addItems(
+            TulosTilastot.UI_TEXT[LANG]["time_selection"])
         self.valinta_aika.currentIndexChanged.connect(self.vaihda_aikaikkunaa)
 
         # Taulukko statistiikalle
@@ -37,7 +40,8 @@ class TulosTilastot(QtWidgets.QDialog):
         self.taulukko.verticalHeader().setStyleSheet(STYLESHEET_TABLEHEADER)
         self.taulukko.horizontalHeader().setStyleSheet(STYLESHEET_TABLEHEADER)
         self.taulukko.setColumnCount(6)
-        self.taulukko.setHorizontalHeaderLabels(["Nimi", "Pisteet", "Uma", "Yht.", "Pelejä", "Per peli"])
+        self.taulukko.setHorizontalHeaderLabels(
+            TulosTilastot.UI_TEXT[LANG]["headers"])
         self.taulukko.setSortingEnabled(True)
         self.taulukko.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
         # Widgetit layouttiin
