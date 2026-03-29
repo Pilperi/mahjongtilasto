@@ -4,4 +4,6 @@ __pycache__/
 build/
 testitulos.txt
 list/
-
+dist/
+build/
+*.spec
